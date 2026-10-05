@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship-readiness checklist — take home</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --ink:#e8eaed; --muted:#9aa0a6;
+    --line:#2a2f3a; --accent:#4f8cff; --warn:#e5534b; --chip:#20242e;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7f9; --card:#ffffff; --ink:#1a1c1f; --muted:#5f6368;
+      --line:#e3e6ea; --chip:#eef1f5; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:780px;margin:0 auto;padding:26px 20px 70px;}
+  h1{font-size:1.4rem;margin:0 0 .15em;line-height:1.25;}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:.95rem;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;margin:0 0 14px;}
+  h2{font-size:.76rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 9px;}
+  p{margin:.4em 0;}
+  ul{margin:.3em 0;padding-left:0;list-style:none;}
+  li{margin:.42em 0;padding-left:26px;position:relative;}
+  li::before{content:"";position:absolute;left:0;top:.18em;width:14px;height:14px;
+    border:1.5px solid var(--muted);border-radius:3px;}
+  li.plain{padding-left:0}
+  li.plain::before{display:none}
+  .lead{font-size:1.02rem;}
+  .fill{display:inline-block;border-bottom:1px solid var(--muted);min-width:230px;height:1.1em;}
+  .hard li::before{border-color:var(--warn);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:620px){ .two{grid-template-columns:1fr} }
+  .note{color:var(--muted);font-size:.86rem;}
+  .tag{display:inline-block;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--chip);color:var(--muted);border-radius:999px;padding:2px 9px;margin-left:6px;}
+  footer{color:var(--muted);font-size:.8rem;margin-top:18px;line-height:1.45;}
+  a{color:var(--accent)}
+  @media print{
+    @page{margin:11mm}
+    :root{--bg:#fff;--card:#fff;--ink:#000;--muted:#444;--line:#999;--chip:#fff;--accent:#000;}
+    body{font-size:9.4pt;line-height:1.32}
+    .wrap{max-width:none;padding:0}
+    h1{font-size:14pt} .sub{font-size:8.6pt;margin-bottom:6px}
+    section{padding:6px 9px;margin-bottom:6px;break-inside:avoid;border-color:#999}
+    h2{font-size:7.4pt;margin-bottom:4px}
+    li{margin:.2em 0}
+    p{margin:.32em 0}
+    .lead{font-size:9.6pt}
+    footer{font-size:7.2pt;margin-top:6px}
+    .two{gap:10px}
+    a{text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Ship-readiness checklist</h1>
+<p class="sub">From <em>The Green Checkmark Is Not Enough</em> · IEEE iGET 2026 · Agni Tripathi.
+  Made to be marked up. Take it to your next release review.</p>
+
+<section>
+  <h2>Start here</h2>
+  <p class="lead">A passing score tells you the output met the check that was run. It does not tell you
+    <b>how the agent got there</b>, <b>whether the evidence it used was sound</b>, or <b>whether what it
+    changed should ship</b>. Those are separate questions, and you have to go and ask them.</p>
+</section>
+
+<section>
+  <h2>1 · Grade the output</h2>
+  <ul>
+    <li><b>Accuracy</b> — is it actually correct?</li>
+    <li><b>Groundedness</b> — is every claim supported by something it actually retrieved?</li>
+    <li><b>Completeness</b> — does it resolve the whole task, not most of it?</li>
+    <li><b>Actionability</b> — can someone act on it directly, in order, safely?</li>
+  </ul>
+  <p class="note">In the session's capture (one model, one prompt, 8 repeats): accuracy and groundedness never
+    moved; completeness and actionability flipped on both cases. Criteria you settle by pointing at the evidence
+    tend to be stable. Criteria that ask "is this <em>enough</em>?" are judgement calls, and judgement calls move.
+    Re-run your own judge a few times before you trust a single score.</p>
+</section>
+
+<section>
+  <h2>2 · Then read the trace <span class="tag">the part a score cannot show you</span></h2>
+  <ul>
+    <li><b>What did it read, and how fresh was it?</b> Check timestamps on every source. A correct answer from a
+      stale source passes all four criteria above and is still wrong.</li>
+    <li><b>Did it verify, or only claim to?</b> Find the actual verification step. Confirm it ran and that it passed.</li>
+    <li><b>Did it change the thing it was judged by?</b> Tests, fixtures, mocks, eval data, the rubric itself.
+      Verification against something the agent authored proves only self-consistency.</li>
+    <li><b>Did any tool call fail?</b> If so, did the run stop, or continue as if nothing happened?</li>
+    <li><b>Does the summary imply steps that never occurred?</b> Match every claim in the final message to a real call.</li>
+    <li><b>Did it escalate when it should have?</b> Low confidence, missing permission, ambiguous instruction, irreversible action.</li>
+    <li><b>Is the scope what you asked for?</b> List every file, record or system it touched.</li>
+  </ul>
+</section>
+
+<div class="two">
+  <section class="hard">
+    <h2>3 · Release boundaries — never ship if…</h2>
+    <ul>
+      <li>the agent modified its own tests, fixtures or evaluation data</li>
+      <li>a required verification errored and the run continued</li>
+      <li>a claim in the summary has no supporting tool result</li>
+      <li>it acted irreversibly outside the scope you granted</li>
+      <li><span class="fill"></span></li>
+      <li><span class="fill"></span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4 · Escalate to a human when…</h2>
+    <ul>
+      <li>the action is irreversible or externally visible</li>
+      <li>the evidence is stale, partial or conflicting</li>
+      <li>the agent reports low confidence, or disagrees with itself across runs</li>
+      <li>the failure would be expensive, unsafe or hard to detect later</li>
+      <li><span class="fill"></span></li>
+      <li><span class="fill"></span></li>
+    </ul>
+  </section>
+</div>
+
+<section>
+  <h2>5 · Is an automated judge enough here?</h2>
+  <p><b>Usually yes</b> — high volume, criteria you can settle against evidence, cheap and reversible errors,
+    and you sample-audit the judge against humans on a schedule.</p>
+  <p><b>Not on its own</b> — judgement-heavy criteria, irreversible or outward-facing actions, novel failure modes
+    nobody has written a check for, and any case where <b>the agent can influence the thing that evaluates it</b>.</p>
+  <p class="note">Whoever signs off owns the decision, not the dashboard. A score is evidence, not a verdict.</p>
+</section>
+
+<section>
+  <h2>6 · Do these three things this month</h2>
+  <ul>
+    <li>Take one agent you already ship and read a full trace of it, start to finish. Just once.</li>
+    <li>Add one process check to your release review from section 3 above.</li>
+    <li>Re-run your evaluator on the same input several times and see whether it agrees with itself.</li>
+  </ul>
+</section>
+
+<footer>
+  Practice the method: <a href="https://github.com/agnitrip/shipready">github.com/agnitrip/shipready</a> (open source, MIT).
+  The lab traces come from <a href="https://github.com/microsoft/SWE-bench-Live">SWE-bench-Live</a> (MIT).
+  The judge examples use <a href="https://github.com/RUCAIBox/HaluEval">HaluEval</a> (MIT), whose question and
+  reference fields derive from <a href="https://github.com/hotpotqa/hotpot">HotpotQA</a>
+  (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>).
+  Session findings are illustrative of the configurations tested, not general claims about agents or judges.
+</footer>
+
+</div>
+</body>
+</html>

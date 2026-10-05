@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trace Lab — Is this agent ready to ship?</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --ink:#e8eaed; --muted:#9aa0a6;
+    --line:#2a2f3a; --accent:#4f8cff; --green:#2ea043; --red:#e5534b;
+    --add-bg:#10361f; --del-bg:#3a1413; --chip:#20242e;
+    --maxw:760px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f7f9; --card:#ffffff; --ink:#1a1c1f; --muted:#5f6368;
+      --line:#e3e6ea; --add-bg:#e6ffed; --del-bg:#ffeef0; --chip:#eef1f5; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-text-size-adjust:100%;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:28px 20px 80px;}
+  header h1{font-size:1.5rem;line-height:1.25;margin:.2em 0 .1em;}
+  .sub{color:var(--muted);margin:0 0 20px;}
+  .lens{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin:0 0 26px;}
+  .lens h2{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 10px;}
+  .lens ol{margin:0;padding-left:1.2em;}
+  .lens li{margin:.25em 0;}
+  .lens b{color:var(--ink);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 20px;margin:0 0 26px;}
+  .tag{display:inline-block;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--chip);color:var(--muted);border-radius:999px;padding:3px 10px;margin-bottom:10px;}
+  .card h2{font-size:1.25rem;margin:.1em 0 .5em;}
+  .passed{display:inline-flex;align-items:center;gap:7px;background:var(--green);
+    color:#fff;font-weight:600;border-radius:8px;padding:5px 11px;font-size:.92rem;}
+  .result{margin:16px 0 4px;font-size:.98rem;}
+  ol.steps{padding-left:1.3em;margin:.6em 0 1em;}
+  ol.steps li{margin:.5em 0;}
+  details{border:1px solid var(--line);border-radius:10px;margin:12px 0 4px;background:transparent;}
+  summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:.92rem;color:var(--accent);
+    list-style:none;}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--muted);}
+  details[open] summary::before{content:"▾ ";}
+  .diff{overflow-x:auto;margin:0;padding:12px 14px;border-top:1px solid var(--line);
+    font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;}
+  .diff .add{display:block;background:var(--add-bg);}
+  .diff .del{display:block;background:var(--del-bg);}
+  .diff .ctx{display:block;color:var(--muted);}
+  .note{color:var(--muted);font-size:.9rem;}
+  /* judge panel */
+  .jcase{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
+  .jcase button{flex:1 1 180px;background:var(--chip);color:var(--ink);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;font:inherit;font-size:.9rem;cursor:pointer;text-align:left;}
+  .jcase button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+  .jcase b{display:block;font-size:.95rem;margin-bottom:2px;}
+  .jcase span{color:var(--muted);font-size:.84rem;}
+  .qa{background:rgba(127,127,127,.08);border-radius:10px;padding:12px 14px;margin:0 0 14px;font-size:.94rem;}
+  .qa dt{color:var(--muted);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;margin-top:9px;}
+  .qa dt:first-child{margin-top:0}
+  .qa dd{margin:3px 0 0;}
+  .jbtns{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px;}
+  .jrun{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 18px;
+    font:inherit;font-weight:600;cursor:pointer;}
+  .jrun:disabled{opacity:.45;cursor:default;}
+  .jreset{background:none;border:none;color:var(--muted);font:inherit;font-size:.88rem;
+    text-decoration:underline;cursor:pointer;padding:6px;}
+  .tally{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);}
+  .tally i{font-style:normal;font-weight:700;}
+  .tally i.p{color:var(--green)} .tally i.f{color:var(--red)}
+  .verdict{border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px;}
+  .verdict h4{margin:0 0 10px;font-size:.95rem;}
+  .vrow{display:grid;grid-template-columns:118px 46px 1fr;gap:4px 10px;padding:8px 0;
+    border-top:1px solid var(--line);font-size:.92rem;align-items:baseline;}
+  .vrow:first-of-type{border-top:none}
+  .vk{color:var(--muted);}
+  .vv{font-weight:700;}
+  .vv.p{color:var(--green)} .vv.f{color:var(--red)}
+  .vw{color:var(--muted);min-width:0;overflow-wrap:anywhere;}
+  @media (max-width:560px){
+    /* stack: name + verdict on one line, reasoning full width underneath */
+    .vrow{grid-template-columns:1fr auto;}
+    .vw{grid-column:1 / -1;}
+  }
+  .flipnote{border-left:3px solid var(--accent);padding:10px 12px;margin:12px 0 0;
+    background:rgba(79,140,255,.08);border-radius:0 8px 8px 0;font-size:.93rem;}
+  .stub{color:var(--muted);font-size:.93rem;border:1px dashed var(--line);border-radius:10px;padding:14px;}
+  .eviz{padding:4px 14px 12px;border-top:1px solid var(--line);}
+  .eviz p{margin:.8em 0 .5em;font-size:.95rem;}
+  .eviz .diff{border-top:none;border-radius:8px;background:rgba(127,127,127,.08);padding:10px 12px;}
+  @media (max-width:520px){ .diff{font-size:11.5px} .eviz p{font-size:.9rem} }
+  .decision{border-top:1px dashed var(--line);margin-top:18px;padding-top:16px;}
+  .decision h3{font-size:1rem;margin:0 0 10px;}
+  table.crit{width:100%;border-collapse:collapse;font-size:.95rem;margin:.4em 0 1em;}
+  table.crit th,table.crit td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  table.crit th{color:var(--muted);font-weight:600;font-size:.82rem;}
+  .box{display:inline-block;width:1.05em;height:1.05em;border:2px solid var(--muted);
+    border-radius:4px;vertical-align:-2px;margin-right:4px;}
+  .shipline{font-size:1.05rem;font-weight:600;margin:14px 0 8px;}
+  .because{border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--muted);
+    min-height:46px;}
+  .foot{color:var(--muted);font-size:.9rem;text-align:center;margin-top:30px;}
+  hr.soft{border:none;border-top:1px solid var(--line);margin:30px 0;}
+  @media print{
+    :root{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#bbb;}
+    details{border:none} details>summary{display:none}
+    .diff{border-top:1px solid #bbb}
+    details .diff{display:block !important}
+    .card,.lens{break-inside:avoid;border:1px solid #bbb;}
+    a{color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Trace Lab — would you ship this agent?</h1>
+  <p class="sub">iGET 2026 · You will read what an AI agent actually <em>did</em>, then decide. No install, no code. Read the steps, expand the evidence if you want, circle a decision.</p>
+</header>
+
+<section class="lens">
+  <h2>Your grading lens — four criteria</h2>
+  <ol>
+    <li><b>Accuracy</b> — is the fix actually correct?</li>
+    <li><b>Groundedness</b> — is every step backed by real evidence, not assumed?</li>
+    <li><b>Completeness</b> — does it fully resolve the task?</li>
+    <li><b>Actionability</b> — is it safe to apply as-is?</li>
+  </ol>
+  <p class="note" style="margin:.6em 0 0">Each case was scored <b>PASSED</b> by the benchmark. Your job: decide whether “passed” is enough.</p>
+</section>
+
+<!-- JUDGE PANEL -->
+<section class="card" id="judge">
+  <span class="tag">First · run the judge yourself</span>
+  <h2>Does the judge agree with itself?</h2>
+  <p>Before you grade an agent, meet the thing that usually grades it for you: another language model.
+    Pick a case, run the judge, then run it again on the <em>same</em> input and watch what happens.</p>
+
+  <div class="jcase" id="jcase" role="group" aria-label="Pick a case"></div>
+  <dl class="qa" id="jqa"></dl>
+
+  <div class="jbtns">
+    <button class="jrun" id="jrun">Run the judge</button>
+    <span class="tally" id="jtally"></span>
+    <button class="jreset" id="jreset" hidden>reset</button>
+  </div>
+
+  <div id="jout"></div>
+  <p class="note" id="jmeta"></p>
+</section>
+
+<hr class="soft">
+
+<!-- WARM-UP -->
+<section class="card">
+  <span class="tag">Warm-up · 2 minutes</span>
+  <h2>A crash in a music-library tool</h2>
+  <p><b>The bug:</b> importing music with certain settings crashes with <code>TypeError: format() argument 2 must be str, not int</code>. It happens when a config value is a number (like <code>play_count: 0</code>) instead of text.</p>
+
+  <p class="note">What the agent did:</p>
+  <ol class="steps">
+    <li>Read the error. Found the crash in <code>importer.py</code>, where the code calls <code>format(…, value)</code> but <code>value</code> is sometimes a number.</li>
+    <li>Confirmed the function expects text.</li>
+    <li><b>Fixed the source:</b> wrapped the value in <code>str(…)</code> at the three places that crash.</li>
+    <li>Wrote a throwaway test script; it couldn’t run (a library was missing), so the agent reasoned through it instead, then deleted the throwaway script.</li>
+    <li>Submitted. The change touches only <code>importer.py</code>.</li>
+  </ol>
+
+  <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(4 of 4 target tests pass, 1708 others still pass)</span></p>
+
+  <details>
+    <summary>What the submitted change did</summary>
+    <div class="eviz">
+      <p><b>Files touched:</b> one source file (<code>beets/importer.py</code>). No test files.</p>
+      <p><b>The change.</b> At the three places where the crash happened, the agent converted the value to text
+        before formatting it, so a number no longer breaks the call. The same one-line pattern was applied at
+        each of the three sites.</p>
+      <pre class="diff"><span class="ctx">3 crash sites, same one-line change:</span>
+<span class="del">before:  format(x, &lt;value&gt;)</span>
+<span class="add">after:   format(x, as_text(&lt;value&gt;))</span>
+<span class="ctx">↳ numbers no longer break the call</span></pre>
+      <p class="note">Schematic written for this workshop. The real patch is in the upstream instance, linked below.</p>
+    </div>
+  </details>
+
+  <div class="decision">
+    <h3>Your call (warm-up)</h3>
+    <p class="shipline"><span class="box"></span> SHIP &nbsp;&nbsp; <span class="box"></span> NO-SHIP</p>
+    <p class="note">because…</p>
+    <div class="because"></div>
+    <p class="note" style="margin-top:12px">A gentle one. Get comfortable with the format, then scroll down.</p>
+  </div>
+</section>
+
+<hr class="soft">
+
+<!-- MAIN CASE -->
+<section class="card">
+  <span class="tag">Main case · grade this one</span>
+  <h2>A build-tool bug in a package manager</h2>
+  <p><b>The bug:</b> when the tool runs a Bazel build with <code>clean=True</code>, it runs two commands with <em>different</em> startup options:</p>
+  <ul>
+    <li><code>bazel clean</code> — no startup options</li>
+    <li><code>bazel --bazelrc=… build …</code> — with startup options</li>
+  </ul>
+  <p>Because the options differ, Bazel shuts down its own server between them. The fix should make both commands use the <b>same</b> startup options.</p>
+
+  <p class="note">What the agent did:</p>
+  <ol class="steps">
+    <li>Read the issue. Correctly identified that <code>clean</code> and <code>build</code> must share the same <code>--bazelrc</code> startup options, in <code>bazel.py</code>.</li>
+    <li>Located the <code>Bazel.build()</code> method and viewed the code.</li>
+    <li><b>Fixed the source:</b> refactored so a shared <code>startup_options</code> string is built once and applied to <b>both</b> the clean and build commands. (This matches what the issue asked for.)</li>
+    <li>Opened the existing test file <code>test_bazel.py</code>.</li>
+    <li>Decided the existing tests didn’t cover <code>clean=True</code>, and set out to add tests.</li>
+    <li>Ran the tests. The existing test’s way of capturing commands came back empty and didn’t behave as the agent expected.</li>
+    <li><b>Changed the existing tests:</b> replaced their check with a custom capture function the agent wrote, and rewrote the existing assertions against it.</li>
+    <li><b>Added new tests</b> built around its own change, using the same custom capture.</li>
+    <li>Re-ran until all its unit tests passed. (Some broader tests failed because Bazel isn’t installed in the test environment — expected.)</li>
+    <li>Submitted. The change touches <code>bazel.py</code> <b>and</b> <code>test_bazel.py</code>.</li>
+  </ol>
+
+  <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(1 of 1 target test passes, 4058 others still pass)</span></p>
+
+  <details>
+    <summary>What the submitted change did</summary>
+    <div class="eviz">
+      <p><b>Files touched:</b> one source file (<code>conan/tools/google/bazel.py</code>)
+        <b>and</b> one test file (<code>test/unittests/tools/google/test_bazel.py</code>).</p>
+
+      <p><b>1. The source change.</b> Previously the startup options were appended directly onto the build
+        command, and the clean command was issued as a bare <code>bazel clean</code>. The agent pulled the startup
+        options out into their own value, then built both commands from it, so clean and build now carry the same
+        options.</p>
+      <pre class="diff"><span class="ctx">opts = the --bazelrc startup flags</span>
+<span class="del">before:</span>
+<span class="del">  clean = bazel clean        ← no opts</span>
+<span class="del">  build = bazel +opts+ build</span>
+<span class="add">after:</span>
+<span class="add">  clean = bazel +opts+ clean ← same</span>
+<span class="add">  build = bazel +opts+ build</span></pre>
+
+      <p><b>2. The test changes.</b> The existing test asserted against the commands recorded by the shared test
+        double. The agent added its own capture function, pointed the test double's run method at it, and rewrote
+        the existing assertion to check its own list instead of the shared one. It then added two new tests for the
+        <code>clean=True</code> path using that same private capture.</p>
+      <pre class="diff"><span class="del">before:</span>
+<span class="del">  assert &lt;cmd&gt; in &lt;shared recorder&gt;</span>
+<span class="add">after:</span>
+<span class="add">  assert &lt;cmd&gt; in &lt;agent's own list&gt;</span>
+<span class="ctx">  + 2 new tests around its own change</span></pre>
+      <p class="note">Schematics written for this workshop. The real patch is in the upstream instance, linked below.</p>
+    </div>
+  </details>
+
+  <div class="decision">
+    <h3>Your call</h3>
+    <table class="crit">
+      <tr><th>Criterion</th><th>Pass?</th><th>Note</th></tr>
+      <tr><td>Accuracy — is the fix correct?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
+      <tr><td>Groundedness — every step evidence-backed?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
+      <tr><td>Completeness — fully resolves the task?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
+      <tr><td>Actionability — safe to apply as-is?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
+    </table>
+    <p class="shipline"><span class="box"></span> SHIP &nbsp;&nbsp; <span class="box"></span> NO-SHIP</p>
+    <p class="note">In one line, because…</p>
+    <div class="because"></div>
+  </div>
+</section>
+
+<p class="foot">Keep your decision. We vote as a room, then look at what the benchmark label can — and cannot — see.</p>
+
+<section class="card" id="takehome">
+  <span class="tag">Take this with you</span>
+  <h2>The ship-readiness checklist</h2>
+  <p>One page to mark up and take to your next release review: how to grade an output, what to look for in a
+    trace, your own release boundaries and escalation rules, and when an automated judge is not enough on its own.</p>
+  <p style="margin-top:12px"><a href="checklist.html"><b>Open the checklist →</b></a>
+    &nbsp;<span class="note">(prints to a single page)</span></p>
+</section>
+
+<section class="card" id="licenses">
+  <span class="tag">Sources and licenses</span>
+  <h2>Data and code attributions</h2>
+  <p><b>Current trace examples.</b> SWE-bench-Live instance metadata and evaluation behavior are from
+    <a href="https://github.com/microsoft/SWE-bench-Live">SWE-bench-Live</a>, © Microsoft Corporation,
+    under the <a href="https://github.com/microsoft/SWE-bench-Live/blob/main/LICENSE">MIT License</a>.
+    The projects under test are <a href="https://github.com/conan-io/conan">Conan</a>, © 2019 JFrog Ltd,
+    and <a href="https://github.com/beetbox/beets">beets</a>, © 2010–2016 Adrian Sampson, each under the MIT License.</p>
+  <p><b>On the agent submissions.</b> The step timelines and schematics on this page are original descriptions
+    written for this workshop. They summarize what each agent did; they do not reproduce the submitted patches.
+    The underlying artifacts are public in the
+    <a href="https://github.com/SWE-bench-Live/submission">SWE-bench-Live submission repository</a>, which does not
+    state a blanket license for them. Factual outcomes quoted here (which files a patch touched, the resolved
+    status, and the test counts) are reported as facts, with the source linked so readers can verify them.</p>
+  <p><b>If HaluEval QA examples appear on this page.</b> They are from
+    <a href="https://github.com/RUCAIBox/HaluEval">HaluEval</a> (Li et al., 2023), © 2020 RUCAIBox,
+    released under the <a href="https://github.com/RUCAIBox/HaluEval/blob/main/LICENSE">MIT License</a>.
+    HaluEval states that its knowledge, question, and reference-answer fields were collected from
+    <a href="https://github.com/hotpotqa/hotpot">HotpotQA</a> (Yang et al., 2018), licensed
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; its hallucinated answers were generated for HaluEval.
+    Examples on this site may be selected, reformatted, and annotated for teaching. Copyrightable adaptations of
+    HotpotQA-derived fields are offered under CC BY-SA 4.0. No endorsement by the dataset authors is implied.</p>
+  <p>The CC BY-SA terms attach to the HotpotQA-derived material and adaptations of it, not automatically to this entire
+    collection, its code, or independently authored workshop text.</p>
+  <details>
+    <summary>MIT permission notice</summary>
+    <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+      documentation files (the “Software”), to deal in the Software without restriction, including without limitation
+      the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+      permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+    <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+      the Software.</p>
+    <p>THE SOFTWARE IS PROVIDED
+      “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+      HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+      ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+  </details>
+</section>
+
+</div>
+
+<script src="judge-samples.js"></script>
+<script>
+(function () {
+  var D = window.JUDGE_SAMPLES;
+  var elCase = document.getElementById('jcase'),
+      elQA   = document.getElementById('jqa'),
+      elRun  = document.getElementById('jrun'),
+      elOut  = document.getElementById('jout'),
+      elTal  = document.getElementById('jtally'),
+      elRes  = document.getElementById('jreset'),
+      elMeta = document.getElementById('jmeta');
+
+  if (!D || !D.cases || !D.cases.length) {
+    elCase.innerHTML = '<p class="stub">No judge runs have been captured yet. ' +
+      'Run <code>build-judge-samples.py</code> to populate this panel with real runs.</p>';
+    elQA.remove(); elRun.disabled = true; elTal.remove(); return;
+  }
+
+  var CRIT = ['accuracy', 'groundedness', 'completeness', 'actionability'];
+  var sel = 0, shown = 0;
+
+  D.cases.forEach(function (c, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.innerHTML = '<b>' + c.label + '</b><span>' + c.blurb + '</span>';
+    b.onclick = function () { sel = i; shown = 0; paint(); };
+    elCase.appendChild(b);
+  });
+
+  elMeta.textContent = 'Judge: ' + D.model + ' · temperature ' + D.temperature +
+    ' · ' + D.runs_per_case + ' runs captured per case on ' + D.captured_at +
+    '. These are real recorded runs, replayed in the order they happened.';
+
+  elRun.onclick = function () {
+    if (shown < D.cases[sel].runs.length) { shown++; paint(); }
+  };
+  elRes.onclick = function () { shown = 0; paint(); };
+
+  function paint() {
+    var c = D.cases[sel];
+
+    Array.prototype.forEach.call(elCase.children, function (b, i) {
+      b.setAttribute('aria-pressed', i === sel ? 'true' : 'false');
+    });
+
+    elQA.innerHTML =
+      '<dt>Context the assistant was given</dt><dd>' + esc(c.knowledge) + '</dd>' +
+      '<dt>Question</dt><dd>' + esc(c.question) + '</dd>' +
+      '<dt>The answer being judged</dt><dd><b>' + esc(c.answer) + '</b></dd>';
+
+    var runs = c.runs.slice(0, shown);
+    elOut.innerHTML = runs.map(function (r, i) {
+      return '<div class="verdict"><h4>Run ' + (i + 1) + '</h4>' +
+        CRIT.map(function (k) { return row(k, r[k]); }).join('') +
+        row('overall', r.overall, true) + '</div>';
+    }).join('');
+
+    elTal.innerHTML = shown
+      ? 'overall: ' + runs.map(function (r) {
+          var p = r.overall.verdict === 'pass';
+          return '<i class="' + (p ? 'p' : 'f') + '">' + (p ? 'PASS' : 'FAIL') + '</i>';
+        }).join(' ')
+      : '';
+
+    elRes.hidden = shown === 0;
+    var left = c.runs.length - shown;
+    elRun.disabled = left === 0;
+    elRun.textContent = shown === 0 ? 'Run the judge'
+      : (left === 0 ? 'No more captured runs' : 'Run it again (' + left + ' left)');
+
+    if (shown >= 2) {
+      var flipped = CRIT.concat(['overall']).filter(function (k) {
+        return runs.some(function (r) { return r[k].verdict !== runs[0][k].verdict; });
+      });
+      var note = flipped.length
+        ? '<b>The judge disagreed with itself</b> on: ' + flipped.join(', ') +
+          '. Same input, same judge, different answer. Which criteria moved, and why might those be the unstable ones?'
+        : '<b>Stable so far</b> across ' + shown + ' runs. That is a real result too. ' +
+          'Stability depends on the model, the prompt, the rubric and the task. Try the other case.';
+      elOut.insertAdjacentHTML('beforeend', '<div class="flipnote">' + note + '</div>');
+    }
+    if (shown >= 1 && c.note) {
+      elOut.insertAdjacentHTML('beforeend',
+        '<p class="note" style="margin-top:12px">Dataset labels this answer <b>' +
+        esc(c.dataset_label) + '</b>. ' + esc(c.note) + '</p>');
+    }
+  }
+
+  function row(k, v, strong) {
+    var p = v.verdict === 'pass';
+    return '<div class="vrow"><span class="vk">' + (strong ? '<b>' + k + '</b>' : k) +
+      '</span><span class="vv ' + (p ? 'p' : 'f') + '">' + (p ? 'pass' : 'fail') +
+      '</span><span class="vw">' + esc(v.why) + '</span></div>';
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch];
+    });
+  }
+
+  paint();
+})();
+</script>
+</body>
+</html>
