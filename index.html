@@ -113,6 +113,17 @@
     .card,.lens{break-inside:avoid;border:1px solid #bbb;}
     a{color:#000}
   }
+
+  input.box{appearance:none;-webkit-appearance:none;width:14px;height:14px;vertical-align:-2px;
+    border:1.5px solid var(--muted);border-radius:3px;background:transparent;margin:0 4px 0 0;
+    cursor:pointer;position:relative}
+  input.box:checked{background:var(--accent);border-color:var(--accent)}
+  input.box:checked::after{content:"";position:absolute;left:3.5px;top:0.5px;width:4px;height:8px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  textarea.because{width:100%;min-height:3em;border:1px solid var(--line);border-radius:8px;
+    background:transparent;color:var(--ink);font:inherit;padding:8px;outline:none}
+  textarea.because:focus{border-color:var(--accent)}
+  .savednote{font-size:.82rem;color:var(--muted);margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -190,9 +201,9 @@
 
   <div class="decision">
     <h3>Your call (warm-up)</h3>
-    <p class="shipline"><span class="box"></span> SHIP &nbsp;&nbsp; <span class="box"></span> NO-SHIP</p>
+    <p class="shipline"><input type="checkbox" class="box"> SHIP &nbsp;&nbsp; <input type="checkbox" class="box"> NO-SHIP</p>
     <p class="note">because…</p>
-    <div class="because"></div>
+    <textarea class="because" rows="2" placeholder="because…"></textarea>
     <p class="note" style="margin-top:12px">A gentle one. Get comfortable with the format, then scroll down.</p>
   </div>
 </section>
@@ -203,12 +214,23 @@
 <section class="card">
   <span class="tag">Main case · grade this one</span>
   <h2>A build-tool bug in a package manager</h2>
-  <p><b>The bug:</b> when the tool runs a Bazel build with <code>clean=True</code>, it runs two commands with <em>different</em> startup options:</p>
-  <ul>
-    <li><code>bazel clean</code> — no startup options</li>
-    <li><code>bazel --bazelrc=… build …</code> — with startup options</li>
-  </ul>
-  <p>Because the options differ, Bazel shuts down its own server between them. The fix should make both commands use the <b>same</b> startup options.</p>
+  <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
+
+  <div class="note" style="border-left-color:var(--check);background:rgba(46,139,74,.08)">
+    <b>You do not need to understand the bug to grade this trace.</b> Read what the agent
+    <em>did</em>. That is the skill we are practising, and it is the same skill whether the bug
+    is in a build tool, a billing system or a medical device.
+  </div>
+
+  <details>
+    <summary>The precise version of the bug, if you want it</summary>
+    <p>When the tool runs a Bazel build with <code>clean=True</code>, it issues two commands with <em>different</em> startup options:</p>
+    <ul>
+      <li><code>bazel clean</code>, with no startup options</li>
+      <li><code>bazel --bazelrc=… build …</code>, with startup options</li>
+    </ul>
+    <p>Because the options differ, Bazel shuts down its own server between them. The fix should make both commands use the <b>same</b> startup options.</p>
+  </details>
 
   <p class="note">What the agent did:</p>
   <ol class="steps">
@@ -261,16 +283,19 @@
     <h3>Your call</h3>
     <table class="crit">
       <tr><th>Criterion</th><th>Pass?</th><th>Note</th></tr>
-      <tr><td>Accuracy — is the fix correct?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
-      <tr><td>Groundedness — every step evidence-backed?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
-      <tr><td>Completeness — fully resolves the task?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
-      <tr><td>Actionability — safe to apply as-is?</td><td><span class="box"></span>yes &nbsp;<span class="box"></span>no</td><td></td></tr>
+      <tr><td>Accuracy — is the fix correct?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
+      <tr><td>Groundedness — every step evidence-backed?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
+      <tr><td>Completeness — fully resolves the task?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
+      <tr><td>Actionability — safe to apply as-is?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
     </table>
-    <p class="shipline"><span class="box"></span> SHIP &nbsp;&nbsp; <span class="box"></span> NO-SHIP</p>
+    <p class="shipline"><input type="checkbox" class="box"> SHIP &nbsp;&nbsp; <input type="checkbox" class="box"> NO-SHIP</p>
     <p class="note">In one line, because…</p>
-    <div class="because"></div>
+    <textarea class="because" rows="2" placeholder="because…"></textarea>
   </div>
 </section>
+
+<p style="margin:14px 0 0"><a href="worksheet.html"><b>Open the full worksheet →</b></a>&nbsp;<span class="note">(both sides, including the rubric you build after the lab — prints to two pages)</span></p>
+<p class="savednote">Your ticks and notes save in this browser only. Nothing is sent anywhere.</p>
 
 <p class="foot">Keep your decision. We vote as a room, then look at what the benchmark label can — and cannot — see.</p>
 
@@ -428,6 +453,20 @@
   }
 
   paint();
+})();
+</script>
+
+<script>
+(function(){
+  var K='iget-site-call-v1', f=document.querySelectorAll('input.box, textarea.because');
+  f.forEach(function(el,i){ if(!el.id) el.id='s'+i; });
+  var st={}; try{ st=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){}
+  f.forEach(function(el){
+    if(st[el.id]!==undefined){ el.type==='checkbox' ? el.checked=st[el.id] : el.value=st[el.id]; }
+    el.addEventListener('input',save); el.addEventListener('change',save);
+  });
+  function save(){ var o={}; f.forEach(function(el){ o[el.id]= el.type==='checkbox'?el.checked:el.value; });
+    try{ localStorage.setItem(K,JSON.stringify(o)); }catch(e){} }
 })();
 </script>
 </body>
