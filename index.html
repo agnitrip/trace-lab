@@ -299,6 +299,72 @@
 
 <p class="foot">Keep your decision. We vote as a room, then look at what the benchmark label can — and cannot — see.</p>
 
+<section class="card" id="traces">
+  <span class="tag">Get a trace of your own</span>
+  <h2>Two prompts you can keep</h2>
+
+  <p><b>1 · Make a trace.</b> Paste this into Claude Code, Claude Desktop, Codex or ChatGPT. It takes
+    about twenty seconds. Watch the middle of the screen, not the end.</p>
+
+  <pre><code>What's the newest iPhone and what's the newest Samsung Galaxy phone?
+Which one came out more recently?
+
+Then print a table of every tool call you made, in order, with these
+columns: tool name, the input you passed, succeeded or failed, and
+one line on what came back.</code></pre>
+
+  <p style="margin-top:18px"><b>2 · Read it back.</b> Paste the trace from step 1 into a
+    <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its own
+    run and it still has its own reasoning in front of it, which is the circular verification we take
+    apart in the lab.</p>
+
+  <pre><code>Below is a trace from an AI agent run. Assess only what the trace
+shows. Do not assume the agent was right.
+
+1. What did it ask for? List every query and filter. Given those
+   queries, what would it have missed?
+2. How fresh was what it found? Does anything carry a date?
+3. Did anything fail or return empty, and did it carry on anyway?
+4. Did it verify anything, or only search?
+5. Is its conclusion fully supported by what came back, or did it
+   fill a gap?
+
+End with two lines:
+- How much weight this result deserves, and why.
+- The single thing that would most change your assessment.
+
+[paste the trace here]</code></pre>
+
+  <div class="note" style="border-left-color:var(--accent);background:rgba(110,168,254,.08)">
+    <b>There is no score, on purpose.</b> A number would invite you to believe it. A judgement on a
+    single run is exactly the thing that moves between runs, which is what the judge panel at the top
+    of this page shows. You get a weighting and the one thing to go and check instead.
+  </div>
+
+  <p class="note" style="margin-top:14px">Both prompts work on your own agents at work, not just the
+    phone question. Step 2 is the useful one to keep.</p>
+
+  <details style="margin-top:16px">
+    <summary>What happened when I ran step 1 three times on 19 October 2026</summary>
+    <p>Same question, same morning, three tools. Three different answers.</p>
+    <table class="crit">
+      <tr><th>Tool</th><th>Model</th><th>Verdict</th><th>Calls</th></tr>
+      <tr><td>ChatGPT</td><td>Instant</td><td>Apple newer, by 14 days</td><td>3</td></tr>
+      <tr><td>Codex</td><td>GPT-6.1 Sol Light</td><td>Samsung newer</td><td>8</td></tr>
+      <tr><td>Claude Code</td><td>Opus 5</td><td>iPhone Duo, &ldquo;came out Oct 23&rdquo;</td><td>5</td></tr>
+    </table>
+    <p>October 23 had not happened yet. It was four days away.</p>
+    <p><b>Why they disagreed, and it is only in the traces.</b> One restricted its search to
+      <code>site:samsung.com/news/</code> and named the phones it expected to find. One went hunting
+      through regional newsrooms for models it had no reason to know about, and opened the pages to
+      read inside them. One asked a generic question and took what came back.</p>
+    <p><b>And the thing step 2 found that I had missed.</b> The Claude run cited four sources,
+      including Apple&rsquo;s own newsroom. Every one of its calls was a <code>WebSearch</code>. There
+      was not a single fetch. It never opened any of them. Those citations are the search engine
+      reporting where it found the text, not the agent reporting that it read the page.</p>
+  </details>
+</section>
+
 <section class="card" id="takehome">
   <span class="tag">Take this with you</span>
   <h2>The ship-readiness checklist</h2>
