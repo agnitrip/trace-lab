@@ -6,9 +6,9 @@
 <title>Trace Lab · Is this agent ready to ship?</title>
 <style>
   :root{
-    --bg:#0f1115; --card:#171a21; --ink:#e8eaed; --muted:#9aa0a6;
-    --line:#2a2f3a; --accent:#4f8cff; --green:#2ea043; --red:#e5534b;
-    --add-bg:#10361f; --del-bg:#3a1413; --chip:#20242e;
+    --bg:#050E1C; --card:#0F2136; --ink:#EAF2FA; --muted:#8FA8C0;
+    --line:#1E3A5C; --accent:#3DD6F5; --green:#2ea043; --red:#e5534b;
+    --add-bg:#10361f; --del-bg:#3a1413; --chip:#16293F; --gold:#E8B339;
     --maxw:1040px;
   }
   *{box-sizing:border-box}
@@ -122,8 +122,8 @@
   .savednote{font-size:.82rem;color:var(--muted);margin:8px 0 0}
 
   /* ---- surface ladder, code blocks, trace colouring, brand, copy ---- */
-  :root{ --code-bg:#0c1016; --code-line:#2b3340;
-         --said:#8b94a3; --did:#6ba6ff; --back:#e8eaed; --back-bg:#131a24; }
+  :root{ --code-bg:#071425; --code-line:#1E3A5C;
+         --said:#8b94a3; --did:#3DD6F5; --back:#EAF2FA; --back-bg:#0C2032; }
   .brand{display:flex;align-items:center;gap:14px;margin:0 0 14px}
   .brand img{display:block}
   .brand-ieee{height:26px;width:auto}
@@ -199,6 +199,38 @@
   @media (max-width:620px){ .acthint{display:none} .acttitle{font-size:1rem} }
   @media print{ .actwrap{display:block} .actbody{display:block !important}
     .actsum::after{display:none} }
+
+  /* deck-matched depth: navy field with a lit top edge */
+  body{background:
+    radial-gradient(1200px 520px at 18% -8%, #123050 0%, rgba(18,48,80,0) 62%),
+    linear-gradient(180deg,#0A1A2F 0%, #050E1C 46%) fixed;
+    background-color:#050E1C}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:3px;
+    background:linear-gradient(90deg,var(--accent),#1B7FB8 55%,transparent);opacity:.9;z-index:5}
+  .card{background:linear-gradient(180deg,#102642 0%, #0D1E33 100%);
+    border:1px solid var(--line);box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(61,214,245,.32)}
+  a:hover{border-bottom-color:var(--accent)}
+  #licenses a{color:#9CC9E8;border-bottom-color:rgba(156,201,232,.28)}
+  .tag{background:var(--chip);color:var(--muted);border:1px solid var(--line)}
+  .actsum:hover{background:rgba(61,214,245,.05)}
+  .actno{background:var(--chip);border-color:var(--line)}
+  .actwrap[open] .actno{background:var(--accent);color:#04121E;border-color:var(--accent)}
+
+  /* 5: progress */
+  .prog{display:flex;align-items:center;gap:10px;margin:0 0 16px;
+    font:600 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .progbar{flex:1;height:4px;border-radius:99px;background:var(--chip);overflow:hidden}
+  .progfill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),#1B7FB8);transition:width .4s ease}
+  .actno.done{background:var(--gold);color:#2A1C00;border-color:var(--gold)}
+  .actwrap[open] .actno.done{background:var(--gold);color:#2A1C00}
+
+  /* 3: replay feedback */
+  .jrun.busy{opacity:.72;pointer-events:none}
+  .replaying{font:600 .74rem/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);margin-left:10px}
 </style>
 </head>
 <body>
@@ -220,6 +252,7 @@
   <h1>Would you ship this agent?</h1>
   <p class="sub">iGET 2026 · You will read what an AI agent actually <em>did</em>, then decide. No install, no code. Read the steps, expand the evidence if you want, circle a decision.</p>
 </header>
+<p class="prog"><span id="progtxt">0 of 4 opened</span><span class="progbar"><i class="progfill" id="progfill"></i></span></p>
 
 <section class="lens">
   <h2>Your grading lens: four criteria</h2>
@@ -233,9 +266,79 @@
 </section>
 
 <!-- JUDGE PANEL -->
+<section class="card act" id="traces">
+  <details class="actwrap">
+    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Two prompts you can keep</span><span class="acthint">Make a trace of your own, then read it back.</span></summary>
+    <div class="actbody">
+
+  <p><b>1 · Make a trace.</b> Paste this into Claude Code, Claude Desktop, Codex or ChatGPT. It takes
+    about twenty seconds. Watch the middle of the screen, not the end.</p>
+
+  <pre><code>What's the newest iPhone and what's the newest Samsung Galaxy phone?
+Which one came out more recently?
+
+Then print a table of every tool call you made, in order, with these
+columns: tool name, the input you passed, succeeded or failed, and
+one line on what came back.</code></pre>
+
+  <p style="margin-top:18px"><b>2 · Read it back.</b> Paste the trace from step 1 into a
+    <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its own
+    run and it still has its own reasoning in front of it, which is the circular verification we take
+    apart in the lab.</p>
+
+  <pre><code>Below is a trace from an AI agent run. Assess only what the trace
+shows. Do not assume the agent was right.
+
+1. What did it ask for? List every query and filter. Given those
+   queries, what would it have missed?
+2. How fresh was what it found? Does anything carry a date?
+3. Did anything fail or return empty, and did it carry on anyway?
+4. Did it verify anything, or only search?
+5. Is its conclusion fully supported by what came back, or did it
+   fill a gap?
+
+End with two lines:
+- How much weight this result deserves, and why.
+- The single thing that would most change your assessment.
+
+[paste the trace here]</code></pre>
+
+  <div class="note" style="border-left-color:var(--accent);background:rgba(110,168,254,.08)">
+    <b>There is no score, on purpose.</b> A number would invite you to believe it. A judgement on a
+    single run is exactly the thing that moves between runs, which is what the judge panel at the top
+    of this page shows. You get a weighting and the one thing to go and check instead.
+  </div>
+
+  <p class="note" style="margin-top:14px">Both prompts work on your own agents at work, not just the
+    phone question. Step 2 is the useful one to keep.</p>
+
+  <details style="margin-top:16px">
+    <summary>What happened when I ran step 1 three times on 19 October 2026</summary>
+    <p>Same question, same morning, three tools. Three different answers.</p>
+    <table class="crit">
+      <tr><th>Tool</th><th>Model</th><th>Verdict</th><th>Calls</th></tr>
+      <tr><td>ChatGPT</td><td>Instant</td><td>Apple newer, by 14 days</td><td>3</td></tr>
+      <tr><td>Codex</td><td>GPT-6.1 Sol Light</td><td>Samsung newer</td><td>8</td></tr>
+      <tr><td>Claude Code</td><td>Opus 5</td><td>iPhone Duo, &ldquo;came out Oct 23&rdquo;</td><td>5</td></tr>
+    </table>
+    <p>October 23 had not happened yet. It was four days away.</p>
+    <p><b>Why they disagreed, and it is only in the traces.</b> One restricted its search to
+      <code>site:samsung.com/news/</code> and named the phones it expected to find. One went hunting
+      through regional newsrooms for models it had no reason to know about, and opened the pages to
+      read inside them. One asked a generic question and took what came back.</p>
+    <p><b>And the thing step 2 found that I had missed.</b> The Claude run cited four sources,
+      including Apple&rsquo;s own newsroom. Every one of its calls was a <code>WebSearch</code>. There
+      was not a single fetch. It never opened any of them. Those citations are the search engine
+      reporting where it found the text, not the agent reporting that it read the page.</p>
+  </details>
+
+    </div>
+  </details>
+</section>
+
 <section class="card act" id="judge">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">Two cases. Run each one twice.</span></summary>
+    <summary class="actsum"><span class="actno">2</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">Two cases. Run each one twice.</span></summary>
     <div class="actbody">
   <p>Before you grade an agent, meet the thing that usually grades it for you: another language model.
     Pick a case, run the judge, then run it again on the <em>same</em> input and watch what happens.</p>
@@ -261,7 +364,7 @@
 <!-- WARM-UP -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">2</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">Thirty seconds. Learn the format.</span></summary>
+    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">Thirty seconds. Learn the format.</span></summary>
     <div class="actbody">
   <p><b>The bug:</b> importing music with certain settings crashes with <code>TypeError: format() argument 2 must be str, not int</code>. It happens when a config value is a number (like <code>play_count: 0</code>) instead of text.</p>
 
@@ -308,7 +411,7 @@
 <!-- MAIN CASE -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">Read it, then make your call.</span></summary>
+    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">Read it, then make your call.</span></summary>
     <div class="actbody">
   <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
 
@@ -399,75 +502,7 @@
 </section>
 
 
-<section class="card act" id="traces">
-  <details class="actwrap">
-    <summary class="actsum"><span class="actno">4</span><span class="acttitle">Two prompts you can keep</span><span class="acthint">Make a trace of your own, then read it back.</span></summary>
-    <div class="actbody">
 
-  <p><b>1 · Make a trace.</b> Paste this into Claude Code, Claude Desktop, Codex or ChatGPT. It takes
-    about twenty seconds. Watch the middle of the screen, not the end.</p>
-
-  <pre><code>What's the newest iPhone and what's the newest Samsung Galaxy phone?
-Which one came out more recently?
-
-Then print a table of every tool call you made, in order, with these
-columns: tool name, the input you passed, succeeded or failed, and
-one line on what came back.</code></pre>
-
-  <p style="margin-top:18px"><b>2 · Read it back.</b> Paste the trace from step 1 into a
-    <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its own
-    run and it still has its own reasoning in front of it, which is the circular verification we take
-    apart in the lab.</p>
-
-  <pre><code>Below is a trace from an AI agent run. Assess only what the trace
-shows. Do not assume the agent was right.
-
-1. What did it ask for? List every query and filter. Given those
-   queries, what would it have missed?
-2. How fresh was what it found? Does anything carry a date?
-3. Did anything fail or return empty, and did it carry on anyway?
-4. Did it verify anything, or only search?
-5. Is its conclusion fully supported by what came back, or did it
-   fill a gap?
-
-End with two lines:
-- How much weight this result deserves, and why.
-- The single thing that would most change your assessment.
-
-[paste the trace here]</code></pre>
-
-  <div class="note" style="border-left-color:var(--accent);background:rgba(110,168,254,.08)">
-    <b>There is no score, on purpose.</b> A number would invite you to believe it. A judgement on a
-    single run is exactly the thing that moves between runs, which is what the judge panel at the top
-    of this page shows. You get a weighting and the one thing to go and check instead.
-  </div>
-
-  <p class="note" style="margin-top:14px">Both prompts work on your own agents at work, not just the
-    phone question. Step 2 is the useful one to keep.</p>
-
-  <details style="margin-top:16px">
-    <summary>What happened when I ran step 1 three times on 19 October 2026</summary>
-    <p>Same question, same morning, three tools. Three different answers.</p>
-    <table class="crit">
-      <tr><th>Tool</th><th>Model</th><th>Verdict</th><th>Calls</th></tr>
-      <tr><td>ChatGPT</td><td>Instant</td><td>Apple newer, by 14 days</td><td>3</td></tr>
-      <tr><td>Codex</td><td>GPT-6.1 Sol Light</td><td>Samsung newer</td><td>8</td></tr>
-      <tr><td>Claude Code</td><td>Opus 5</td><td>iPhone Duo, &ldquo;came out Oct 23&rdquo;</td><td>5</td></tr>
-    </table>
-    <p>October 23 had not happened yet. It was four days away.</p>
-    <p><b>Why they disagreed, and it is only in the traces.</b> One restricted its search to
-      <code>site:samsung.com/news/</code> and named the phones it expected to find. One went hunting
-      through regional newsrooms for models it had no reason to know about, and opened the pages to
-      read inside them. One asked a generic question and took what came back.</p>
-    <p><b>And the thing step 2 found that I had missed.</b> The Claude run cited four sources,
-      including Apple&rsquo;s own newsroom. Every one of its calls was a <code>WebSearch</code>. There
-      was not a single fetch. It never opened any of them. Those citations are the search engine
-      reporting where it found the text, not the agent reporting that it read the page.</p>
-  </details>
-
-    </div>
-  </details>
-</section>
 
 <section class="card" id="takehome">
   <span class="tag">Take this with you</span>
@@ -653,6 +688,45 @@ document.querySelectorAll('pre:not(.diff)').forEach(function(pre){
   });
   pre.appendChild(b);
 });
+</script>
+
+<script>
+(function(){
+  var K='tl-progress-v1', seen={};
+  try{ seen=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){}
+  var wraps=[].slice.call(document.querySelectorAll('.actwrap'));
+  function paint(){
+    var n=0;
+    wraps.forEach(function(w,i){
+      var no=w.querySelector('.actno');
+      if(seen[i]){ no.classList.add('done'); no.textContent='✓'; n++; }
+    });
+    var t=document.getElementById('progtxt'), f=document.getElementById('progfill');
+    if(t) t.textContent=n+' of '+wraps.length+' opened';
+    if(f) f.style.width=(n/wraps.length*100)+'%';
+  }
+  wraps.forEach(function(w,i){
+    w.addEventListener('toggle',function(){
+      if(w.open && !seen[i]){ seen[i]=1;
+        try{ localStorage.setItem(K,JSON.stringify(seen)); }catch(e){}
+        paint(); }
+    });
+  });
+  paint();
+
+  var btn=document.getElementById('jrun');
+  if(btn){
+    btn.addEventListener('click',function(ev){
+      if(btn.dataset.delayed){ delete btn.dataset.delayed; return; }
+      ev.stopImmediatePropagation(); ev.preventDefault();
+      var label=btn.textContent; btn.classList.add('busy'); btn.textContent='Replaying…';
+      setTimeout(function(){
+        btn.classList.remove('busy'); btn.textContent=label;
+        btn.dataset.delayed='1'; btn.click();
+      }, 520);
+    }, true);
+  }
+})();
 </script>
 </body>
 </html>
