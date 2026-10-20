@@ -173,6 +173,32 @@
   .brand-eyebrow{margin-left:auto;font-size:.68rem;letter-spacing:.09em;
     text-transform:uppercase;color:var(--muted);font-weight:600}
   @media (max-width:560px){ .brand-eyebrow{display:none} }
+
+  /* numbered, collapsible activity cards */
+  .act{padding:0;overflow:hidden}
+  .actwrap{border:0;margin:0;background:none}
+  .actsum{display:flex;align-items:center;gap:14px;cursor:pointer;list-style:none;
+    padding:16px 18px;font-weight:400;font-size:1rem;color:var(--ink)}
+  .actsum::-webkit-details-marker{display:none}
+  .actsum::marker{content:none}
+  details.actwrap{list-style:none}
+  details.actwrap>summary::-webkit-details-marker{display:none}
+  .actsum:hover{background:rgba(255,255,255,.025)}
+  .actno{flex:none;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;background:var(--chip);color:var(--muted);
+    font:700 14px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    border:1px solid var(--line)}
+  .actwrap[open] .actno{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .acttitle{font-size:1.1rem;font-weight:600}
+  .acthint{margin-left:auto;font-size:.82rem;color:var(--muted);text-align:right}
+  .actsum::after{content:"›";flex:none;color:var(--muted);font-size:1.5rem;line-height:1;
+    transform:rotate(90deg);transition:transform .15s}
+  .actwrap[open] .actsum::after{transform:rotate(270deg)}
+  .actbody{padding:0 18px 18px;border-top:1px solid var(--line)}
+  .actbody>*:first-child{margin-top:14px}
+  @media (max-width:620px){ .acthint{display:none} .acttitle{font-size:1rem} }
+  @media print{ .actwrap{display:block} .actbody{display:block !important}
+    .actsum::after{display:none} }
 </style>
 </head>
 <body>
@@ -207,9 +233,10 @@
 </section>
 
 <!-- JUDGE PANEL -->
-<section class="card" id="judge">
-  <span class="tag">First · run the judge yourself</span>
-  <h2>Does the judge agree with itself?</h2>
+<section class="card act" id="judge">
+  <details class="actwrap">
+    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">Two cases. Run each one twice.</span></summary>
+    <div class="actbody">
   <p>Before you grade an agent, meet the thing that usually grades it for you: another language model.
     Pick a case, run the judge, then run it again on the <em>same</em> input and watch what happens.</p>
 
@@ -224,14 +251,18 @@
 
   <div id="jout"></div>
   <p class="note" id="jmeta"></p>
+
+    </div>
+  </details>
 </section>
 
 <hr class="soft">
 
 <!-- WARM-UP -->
-<section class="card">
-  <span class="tag">Warm-up · 2 minutes</span>
-  <h2>A crash in a music-library tool</h2>
+<section class="card act">
+  <details class="actwrap">
+    <summary class="actsum"><span class="actno">2</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">Thirty seconds. Learn the format.</span></summary>
+    <div class="actbody">
   <p><b>The bug:</b> importing music with certain settings crashes with <code>TypeError: format() argument 2 must be str, not int</code>. It happens when a config value is a number (like <code>play_count: 0</code>) instead of text.</p>
 
   <p class="note">What the agent did:</p>
@@ -267,14 +298,18 @@
     <textarea class="because" rows="2" placeholder="because…"></textarea>
     <p class="note" style="margin-top:12px">A gentle one. Get comfortable with the format, then scroll down.</p>
   </div>
+
+    </div>
+  </details>
 </section>
 
 <hr class="soft">
 
 <!-- MAIN CASE -->
-<section class="card">
-  <span class="tag">Main case · grade this one</span>
-  <h2>A build-tool bug in a package manager</h2>
+<section class="card act">
+  <details class="actwrap">
+    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">Read it, then make your call.</span></summary>
+    <div class="actbody">
   <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
 
   <div class="note" style="border-left-color:var(--check);background:rgba(46,139,74,.08)">
@@ -353,16 +388,21 @@
     <p class="note">In one line, because…</p>
     <textarea class="because" rows="2" placeholder="because…"></textarea>
   </div>
-</section>
+
 
 <p style="margin:14px 0 0"><a href="worksheet.html"><b>Open the full worksheet →</b></a>&nbsp;<span class="note">(both sides, including the rubric you build after the lab. Prints to two pages)</span></p>
 <p class="savednote">Your ticks and notes save in this browser only. Nothing is sent anywhere.</p>
 
 <p class="foot">Keep your decision. We vote as a room, then look at what the benchmark label can see, and what it cannot.</p>
+    </div>
+  </details>
+</section>
 
-<section class="card" id="traces">
-  <span class="tag">Get a trace of your own</span>
-  <h2>Two prompts you can keep</h2>
+
+<section class="card act" id="traces">
+  <details class="actwrap">
+    <summary class="actsum"><span class="actno">4</span><span class="acttitle">Two prompts you can keep</span><span class="acthint">Make a trace of your own, then read it back.</span></summary>
+    <div class="actbody">
 
   <p><b>1 · Make a trace.</b> Paste this into Claude Code, Claude Desktop, Codex or ChatGPT. It takes
     about twenty seconds. Watch the middle of the screen, not the end.</p>
@@ -423,6 +463,9 @@ End with two lines:
       including Apple&rsquo;s own newsroom. Every one of its calls was a <code>WebSearch</code>. There
       was not a single fetch. It never opened any of them. Those citations are the search engine
       reporting where it found the text, not the agent reporting that it read the page.</p>
+  </details>
+
+    </div>
   </details>
 </section>
 
