@@ -233,16 +233,6 @@
   .actno{background:var(--chip);border-color:var(--line)}
   .actwrap[open] .actno{background:var(--accent);color:#04121E;border-color:var(--accent)}
 
-  /* 5: progress */
-  .prog{display:flex;align-items:center;gap:10px;margin:0 0 16px;
-    font:600 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .progbar{flex:1;height:4px;border-radius:99px;background:var(--chip);overflow:hidden}
-  .progfill{display:block;height:100%;width:0;border-radius:99px;
-    background:linear-gradient(90deg,var(--accent),#1B7FB8);transition:width .4s ease}
-  .actno.done{background:var(--gold);color:#2A1C00;border-color:var(--gold)}
-  .actwrap[open] .actno.done{background:var(--gold);color:#2A1C00}
-
   /* 3: replay feedback */
   .jrun.busy{opacity:.72;pointer-events:none}
   .replaying{font:600 .74rem/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;
@@ -257,12 +247,10 @@
     background:rgba(27,127,184,.14) !important}
   pre:not(.diff){border-left-color:var(--fill)}
   #jout:not(:empty){border-left-color:var(--fill)}
-  .progfill{background:linear-gradient(90deg,var(--fill),var(--done))}
 
   /* 2: green only when the card's actions are actually done */
   .actno{background:var(--chip);color:var(--muted);border-color:var(--line)}
   .actwrap[open] .actno{background:var(--fill);color:#fff;border-color:var(--fill)}
-  .actno.done,.actwrap[open] .actno.done{background:var(--done);color:#fff;border-color:var(--done)}
 
   .consist{display:inline-block;margin-left:14px;padding:3px 10px;border-radius:999px;
     font:700 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;
@@ -299,7 +287,6 @@
   <h1>Would you ship this agent?</h1>
   <p class="sub">iGET 2026 · You will read what an AI agent actually <em>did</em>, then decide. No install, no code. Read the steps, expand the evidence if you want, circle a decision.</p>
 </header>
-<p class="prog"><span id="progtxt">0 of 4 done</span><span class="progbar"><i class="progfill" id="progfill"></i></span></p>
 
 <section class="lens">
   <h2>Your grading lens: four criteria</h2>
@@ -866,54 +853,5 @@ document.querySelectorAll('pre:not(.diff)').forEach(function(pre){
 });
 </script>
 
-<script>
-(function(){
-  var K='tl-done-v2', done={};
-  try{ done=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){}
-  var wraps=[].slice.call(document.querySelectorAll('.actwrap'))
-              .filter(function(w){ return !!w.querySelector('.actno'); });
-  var copied={}, judgeRuns=0;
-
-  function save(){ try{ localStorage.setItem(K,JSON.stringify(done)); }catch(e){} }
-  function paint(){
-    var n=0;
-    wraps.forEach(function(w,i){
-      var no=w.querySelector('.actno');
-      if(done[i]){ no.classList.add('done'); no.textContent='✓'; n++; }
-      else { no.classList.remove('done'); no.textContent=String(i+1); }
-    });
-    var t=document.getElementById('progtxt'), f=document.getElementById('progfill');
-    if(t) t.textContent=n+' of '+wraps.length+' done';
-    if(f) f.style.width=(n/wraps.length*100)+'%';
-  }
-  function mark(i){ if(!done[i]){ done[i]=1; save(); paint(); } }
-  function cardIndex(el){ var w=el.closest('.actwrap'); return wraps.indexOf(w); }
-
-  // card 1: both prompts copied
-  document.querySelectorAll('.copybtn').forEach(function(b,bi){
-    b.addEventListener('click',function(){
-      copied[bi]=1;
-      if(Object.keys(copied).length>=document.querySelectorAll('.copybtn').length){
-        var i=cardIndex(b); if(i>=0) mark(i);
-      }
-    });
-  });
-
-  // card 2: judge run at least twice
-  var jr=document.getElementById('jrun');
-  if(jr) jr.addEventListener('click',function(){
-    judgeRuns++; if(judgeRuns>=2){ var i=cardIndex(jr); if(i>=0) mark(i); }
-  });
-
-  // cards 3 and 4: a ship / no-ship call has been made
-  document.querySelectorAll('.shipline input[type=checkbox]').forEach(function(cb){
-    cb.addEventListener('change',function(){
-      if(cb.checked){ var i=cardIndex(cb); if(i>=0) mark(i); }
-    });
-  });
-
-  paint();
-})();
-</script>
 </body>
 </html>
