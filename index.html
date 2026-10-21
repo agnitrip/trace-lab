@@ -56,6 +56,13 @@
   .ftag.tst{background:rgba(232,179,57,.14);color:var(--gold);border-color:rgba(232,179,57,.48);}
   .ftag.opn{background:var(--chip);color:var(--muted);border-color:var(--line);}
   .tagkey{color:var(--ink);font-size:.92rem;margin:0 0 10px;}
+  .concept{border-left:3px solid var(--accent);background:rgba(61,214,245,.05);
+    border-radius:0 10px 10px 0;padding:11px 14px;margin:15px 0;font-size:.93rem;}
+  .concept .cn{color:var(--accent);font-weight:700;}
+  .dtab{width:100%;border-collapse:collapse;font-size:.9rem;margin:2px 0 0;}
+  .dtab th,.dtab td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .dtab th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
+  .dtab td:first-child{color:var(--accent);font-weight:600;}
   /* judge panel */
   .jcase{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;}
   .jcase button{flex:1 1 180px;background:var(--chip);color:var(--ink);border:1px solid var(--line);
@@ -322,6 +329,13 @@ Then print a table of every tool call you made, in order, with these
 columns: tool name, the input you passed, succeeded or failed, and
 one line on what came back.</code></pre>
 
+  <div class="concept"><span class="cn">Chain of thought</span> is the model writing out its
+    steps before it answers. <span class="cn">Tool calls</span> are the moments it reaches
+    outside itself to search, read or run something. Notice what you just asked for: that table
+    is the model's <em>account</em> of its tool calls, which is not the same thing as a record
+    of them. Compare your answer with the person beside you. Same question and different
+    answers is <span class="cn">nondeterminism</span>, and it is why one run settles nothing.</div>
+
   <p style="margin-top:18px"><b>2 · Read it back.</b> Paste the trace from step 1 into a
     <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its
     own run and it still has its own reasoning in front of it, which is the circular verification
@@ -401,6 +415,11 @@ one line on what came back.</code></pre>
   <p>Before you grade an agent, meet the thing that usually grades it for you: another language model.
     Pick a case and run the judge <b>three or four times</b> on the <em>same</em> input. Two runs is not enough to tell you anything. Watch whether the verdict holds, and watch the reasoning underneath it.</p>
 
+  <div class="concept"><span class="cn">LLM-as-judge</span> means using one model to grade
+    another model's work. <span class="cn">Self-consistency</span> asks whether it returns the
+    same verdict on the same input twice. When it does not, part of the verdict is noise, and a
+    single run cannot tell you which part.</div>
+
   <div class="jcase" id="jcase" role="group" aria-label="Pick a case"></div>
   <dl class="qa" id="jqa"></dl>
 
@@ -467,6 +486,11 @@ one line on what came back.</code></pre>
   </ol>
 
   <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(4 of 4 target tests pass, 1708 others still pass)</span></p>
+
+  <div class="concept">A <span class="cn">benchmark</span> is a fixed set of tasks with known
+    answers. An <span class="cn">eval</span> is any repeatable test of behaviour. That green
+    label is a benchmark result. It tells you the target tests passed, and it tells you nothing
+    about anything the tests did not check.</div>
 
   <details>
     <summary>What the submitted change did</summary>
@@ -540,6 +564,12 @@ one line on what came back.</code></pre>
   </ol>
 
   <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(1 of 1 target test passes, 4058 others still pass)</span></p>
+
+  <div class="concept">A <span class="cn">trace</span> is the recorded sequence of steps above.
+    Benchmark datasets usually call it a <span class="cn">trajectory</span>, so either word will
+    find you the same thing. The <span class="cn">harness</span> is the separate machinery that
+    runs the agent and decides pass or fail. Agent, benchmark and harness are three different
+    things, and that green label came from the harness.</div>
 
   <details>
     <summary>What the submitted change did</summary>
@@ -615,6 +645,33 @@ one line on what came back.</code></pre>
     trace, your own release boundaries and escalation rules, and when an automated judge is not enough on its own.</p>
   <p style="margin-top:12px"><a href="checklist.html"><b>Open the checklist →</b></a>
     &nbsp;<span class="note">(prints to a single page)</span></p>
+</section>
+
+<section class="card act" id="spotting">
+  <details class="actwrap">
+    <summary class="actsum plain"><span class="actglyph" aria-hidden="true">⌕</span><span class="acttitle">Spotting trouble</span><span class="acthint">every idea from today, and how each one breaks</span></summary>
+    <div class="actbody">
+  <p>Nothing here is new. Every idea below turned up somewhere in this session. The column that
+    earns its keep is the last one.</p>
+  <table class="dtab">
+    <thead><tr><th>Idea</th><th>What it is</th><th>What broken looks like</th><th>How you catch it</th></tr></thead>
+    <tbody>
+        <tr><td>Chain of thought</td><td>The model writing out its steps before answering.</td><td>Fluent reasoning, wrong answer. Or it names a source it never opened.</td><td>Check what it said it looked at against what it actually fetched.</td></tr>
+        <tr><td>Tool call</td><td>The moment it reaches outside itself to search, read or run something.</td><td>A call returns empty or errors, and the answer carries on regardless.</td><td>Look for a failed step followed by a confident claim.</td></tr>
+        <tr><td>Trace / trajectory</td><td>The recorded sequence of steps and actions.</td><td>The summary asserts something no step produced.</td><td>Every claim should trace back to a step that produced it.</td></tr>
+        <tr><td>Benchmark</td><td>A fixed set of tasks with known answers.</td><td>It passes and you still would not ship it.</td><td>Ask what the label actually measured.</td></tr>
+        <tr><td>Eval</td><td>Any repeatable test of behaviour, rather than trying it once.</td><td>It only ever ran once, so nobody knows if it holds.</td><td>Run it again. Then again.</td></tr>
+        <tr><td>Harness</td><td>The machinery that runs the agent and decides pass or fail.</td><td>Part of what was submitted was never evaluated.</td><td>Compare what was submitted against what was scored.</td></tr>
+        <tr><td>LLM-as-judge</td><td>Using one model to grade another model's work.</td><td>The grader shares the failure modes of the thing it grades.</td><td>Ask who checks the checker.</td></tr>
+        <tr><td>Self-consistency</td><td>Whether the same input gives the same verdict twice.</td><td>Same input, different verdict.</td><td>Run it three or four times, not two.</td></tr>
+        <tr><td>Nondeterminism</td><td>Same input, different output, run to run.</td><td>You cannot reproduce what you saw.</td><td>Run it twice before believing it.</td></tr>
+        <tr><td>Goodhart's law</td><td>When a measure becomes a target, it stops being a good measure.</td><td>The number improved and the thing you wanted did not.</td><td>Ask whether the effort went into the goal or into the measure.</td></tr>
+        <tr><td>Reward hacking</td><td>Optimising the thing being measured instead of the thing wanted.</td><td>Score up, value flat. Often technically within the rules.</td><td>Ask what the cheapest way to raise this number would be, then look for it.</td></tr>
+        <tr><td>Faithfulness</td><td>Whether the stated reasoning is the real cause of the behaviour.</td><td>The narration and the record disagree.</td><td>Trust the record over the story. This one is an open research question.</td></tr>
+    </tbody>
+  </table>
+    </div>
+  </details>
 </section>
 
 <section class="card act" id="licenses">
