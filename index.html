@@ -379,6 +379,12 @@ one line on what came back.</code></pre>
   </details>
 </section>
 
+<!-- ==========================================================================
+     ⚠️  The beets and Conan case content below is DUPLICATED in trace-packet.md.
+     That markdown file is what gets PRINTED for the zero-device fallback; this
+     file is what ships to the web (the .md is on deploy.sh's deny-list).
+     They have drifted three times. Edit a case here, edit it there too.
+     ========================================================================== -->
 <section class="card act" id="judge">
   <details class="actwrap">
     <summary class="actsum"><span class="actno">2</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">2 min · one run proves nothing</span></summary>
@@ -423,15 +429,28 @@ one line on what came back.</code></pre>
   <details class="actwrap">
     <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">30 sec · the easy one</span></summary>
     <div class="actbody">
-  <p><b>The bug:</b> importing music with certain settings crashes with <code>TypeError: format() argument 2 must be str, not int</code>. It happens when a config value is a number (like <code>play_count: 0</code>) instead of text.</p>
+  <p><b>The bug, in one line:</b> importing music crashes if one of your settings is a
+    <em>number</em> where the code expected <em>text</em>.</p>
+
+  <div class="note" style="border-left-color:var(--done);background:rgba(46,160,67,.10)">
+    <b>You do not need to read code for this.</b> Read what the agent <em>did</em>, step by step,
+    and decide whether you would put your name on it. That is the whole skill.
+  </div>
+
+  <details>
+    <summary>The precise version, if you want it</summary>
+    <p>Importing music raises <code>TypeError: format() argument 2 must be str, not int</code>.
+      It happens when a config value is a number, like <code>play_count: 0</code>, and the code
+      formatting it expects text. The crash is in <code>beets/importer.py</code>.</p>
+  </details>
 
   <p class="note">What the agent did:</p>
   <ol class="steps">
-    <li>Read the error. Found the crash in <code>importer.py</code>, where the code calls <code>format(…, value)</code> but <code>value</code> is sometimes a number.</li>
-    <li>Confirmed the function expects text.</li>
-    <li><b>Fixed the source:</b> wrapped the value in <code>str(…)</code> at the three places that crash.</li>
-    <li>Wrote a throwaway test script; it couldn’t run (a library was missing), so the agent reasoned through it instead, then deleted the throwaway script.</li>
-    <li>Submitted. The change touches only <code>importer.py</code>.</li>
+    <li>Read the error and found the exact spot where it crashes.</li>
+    <li>Confirmed that piece of code needs text, not a number.</li>
+    <li><b>Fixed it:</b> at the three places that crash, it converts the value to text first, so a number no longer breaks the call.</li>
+    <li><b>Tried to check its own fix.</b> It wrote a small test. The test would not run, because something it needed was not installed on that machine. <b>So it never actually saw the fix work.</b> It read the code again, decided the fix was right, deleted the test file it had made, and moved on.</li>
+    <li>Submitted. <b>One file changed. No test files touched.</b></li>
   </ol>
 
   <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(4 of 4 target tests pass, 1708 others still pass)</span></p>
@@ -451,16 +470,7 @@ one line on what came back.</code></pre>
     </div>
   </details>
 
-  <div class="decision">
-    <h3>First: list everything it changed</h3>
-    <p class="note">Not a judgement. Every file, record or system the agent touched. You do not
-      need to know what any of them do.</p>
-    <p><input type="text" class="fill" style="min-width:92%"></p>
-    <p><input type="text" class="fill" style="min-width:92%"></p>
-    <p class="note">Is everything on that list something you would expect, given what it was
-      asked to do?</p>
-  </div>
-
+  
   <div class="decision">
     <h3>Your call (warm-up)</h3>
     <p class="shipline"><input type="checkbox" class="box"> SHIP &nbsp;&nbsp; <input type="checkbox" class="box"> NO-SHIP</p>
@@ -544,6 +554,16 @@ one line on what came back.</code></pre>
       <p class="note">Schematics written for this workshop. The real patch is in the upstream instance, linked below.</p>
     </div>
   </details>
+
+  <div class="decision">
+    <h3>First: list everything it changed</h3>
+    <p class="note">Not a judgement. Every file, record or system the agent touched. You do not
+      need to know what any of them do.</p>
+    <p><input type="text" class="fill" style="min-width:92%"></p>
+    <p><input type="text" class="fill" style="min-width:92%"></p>
+    <p class="note">Is everything on that list something you would expect, given what it was
+      asked to do?</p>
+  </div>
 
   <div class="decision">
     <h3>Your call</h3>
