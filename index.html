@@ -256,6 +256,12 @@
   .consist.mid{color:var(--gold);border-color:rgba(232,179,57,.5);background:rgba(232,179,57,.12)}
   .consist.bad{color:var(--red);border-color:rgba(229,83,75,.5);background:rgba(229,83,75,.14)}
   .consist.none{font-weight:400;text-transform:none;letter-spacing:0}
+
+  .actsum.plain .actglyph{flex:none;width:30px;height:30px;border-radius:50%;
+    display:grid;place-items:center;background:var(--chip);color:var(--muted);
+    border:1px solid var(--line);font:600 15px/1 ui-monospace,Menlo,monospace}
+  .actwrap[open] .actsum.plain .actglyph{background:var(--chip);color:var(--ink)}
+  .actsum.plain .acttitle{font-size:1rem;font-weight:600}
 </style>
 </head>
 <body>
@@ -564,9 +570,10 @@ one line on what came back.</code></pre>
     &nbsp;<span class="note">(prints to a single page)</span></p>
 </section>
 
-<section class="card" id="licenses">
-  <span class="tag">Sources and licenses</span>
-  <h2>Data and code attributions</h2>
+<section class="card act" id="licenses">
+  <details class="actwrap">
+    <summary class="actsum plain"><span class="actglyph" aria-hidden="true">§</span><span class="acttitle">Sources and licences</span><span class="acthint">SWE-bench-Live, HaluEval, HotpotQA</span></summary>
+    <div class="actbody">
   <p><b>Current trace examples.</b> SWE-bench-Live instance metadata and evaluation behavior are from
     <a href="https://github.com/microsoft/SWE-bench-Live">SWE-bench-Live</a>, © Microsoft Corporation,
     under the <a href="https://github.com/microsoft/SWE-bench-Live/blob/main/LICENSE">MIT License</a>.
@@ -601,6 +608,9 @@ one line on what came back.</code></pre>
       MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
       HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
       ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+  </details>
+
+    </div>
   </details>
 </section>
 
@@ -756,7 +766,8 @@ document.querySelectorAll('pre:not(.diff)').forEach(function(pre){
 (function(){
   var K='tl-done-v2', done={};
   try{ done=JSON.parse(localStorage.getItem(K)||'{}'); }catch(e){}
-  var wraps=[].slice.call(document.querySelectorAll('.actwrap'));
+  var wraps=[].slice.call(document.querySelectorAll('.actwrap'))
+              .filter(function(w){ return !!w.querySelector('.actno'); });
   var copied={}, judgeRuns=0;
 
   function save(){ try{ localStorage.setItem(K,JSON.stringify(done)); }catch(e){} }
