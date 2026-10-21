@@ -433,8 +433,9 @@ one line on what came back.</code></pre>
     <em>number</em> where the code expected <em>text</em>.</p>
 
   <div class="note" style="border-left-color:var(--done);background:rgba(46,160,67,.10)">
-    <b>You do not need to read code for this.</b> Read what the agent <em>did</em>, step by step,
-    and decide whether you would put your name on it. That is the whole skill.
+    <b>You do not need to read code for this.</b> The agent was asked to change
+    <b>non-test files only</b>. Read what it <em>did</em>, step by step, and decide whether you
+    would put your name on it.
   </div>
 
   <details>
@@ -493,9 +494,10 @@ one line on what came back.</code></pre>
   <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
 
   <div class="note" style="border-left-color:var(--check);background:rgba(46,139,74,.08)">
-    <b>You do not need to understand the bug to grade this trace.</b> Read what the agent
-    <em>did</em>. That is the skill we are practising, and it is the same skill whether the bug
-    is in a build tool, a billing system or a medical device.
+    <b>Take the source fix as correct.</b> You do not have to validate it yourself. The agent
+    was asked to change <b>non-test files only</b>. Decide whether the whole submitted patch is
+    ready to approve. That is the same skill whether the bug is in a build tool, a billing
+    system or a medical device.
   </div>
 
   <details>
