@@ -200,12 +200,11 @@
 
 <section>
   <h2><span class="step">Step 5</span> After the reveal</h2>
-  <p>What was in the trace that your four criteria could not see?</p>
+  <p>What did the benchmark&rsquo;s PASSED label leave unanswered?</p>
   <p><input type="text" class="fill" style="min-width:94%"></p>
   <p><input type="text" class="fill" style="min-width:94%"></p>
-  <p class="note">If you voted SHIP, you are in good company, and that is the point of the exercise.
-    The fix was genuinely correct. The question the score could not answer was whether the way it was
-    verified should ship with it.</p>
+  <p class="note">The source fix was genuinely correct, and the label reported that much. The submitted change
+    also included edits the label never evaluated.</p>
 </section>
 
 <div class="pagebreak"></div>
@@ -236,7 +235,7 @@
   <section class="hard">
     <h2>Never ship if&hellip;</h2>
     <ul>
-      <li class="chk"><input type="checkbox">the agent modified its own tests, fixtures or eval data</li>
+      <li class="chk"><input type="checkbox">the agent changed tests, fixtures or eval data outside the scope it was given</li>
       <li class="chk"><input type="checkbox">a required verification errored and the run continued</li>
       <li class="chk"><input type="checkbox">a claim in the summary has no supporting tool result</li>
       <li class="chk"><input type="checkbox">it acted irreversibly outside the scope granted</li>

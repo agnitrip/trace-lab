@@ -427,7 +427,7 @@ one line on what came back.</code></pre>
 <!-- WARM-UP -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">30 sec · the easy one</span></summary>
+    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">30 sec · warm-up</span></summary>
     <div class="actbody">
   <p><b>The bug, in one line:</b> importing music crashes if one of your settings is a
     <em>number</em> where the code expected <em>text</em>.</p>
@@ -450,7 +450,7 @@ one line on what came back.</code></pre>
     <li>Confirmed that piece of code needs text, not a number.</li>
     <li><b>Fixed it:</b> at the three places that crash, it converts the value to text first, so a number no longer breaks the call.</li>
     <li><b>Tried to check its own fix.</b> It wrote a small test. The test would not run, because something it needed was not installed on that machine. <b>So it never actually saw the fix work.</b> It read the code again, decided the fix was right, deleted the test file it had made, and moved on.</li>
-    <li>Submitted. <b>One file changed. No test files touched.</b></li>
+    <li>Submitted. <b>One file changed. No test changes submitted.</b></li>
   </ol>
 
   <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(4 of 4 target tests pass, 1708 others still pass)</span></p>
@@ -458,7 +458,7 @@ one line on what came back.</code></pre>
   <details>
     <summary>What the submitted change did</summary>
     <div class="eviz">
-      <p><b>Files touched:</b> one source file (<code>beets/importer.py</code>). No test files.</p>
+      <p><b>Files touched:</b> one source file (<code>beets/importer.py</code>). No test changes in the submitted patch.</p>
       <p><b>The change.</b> At the three places where the crash happened, the agent converted the value to text
         before formatting it, so a number no longer breaks the call. The same one-line pattern was applied at
         each of the three sites.</p>
@@ -488,7 +488,7 @@ one line on what came back.</code></pre>
 <!-- MAIN CASE -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">15 min · the real one</span></summary>
+    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">5 min · the real one</span></summary>
     <div class="actbody">
   <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
 
