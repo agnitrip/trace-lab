@@ -247,6 +247,15 @@
   .actno{background:var(--chip);color:var(--muted);border-color:var(--line)}
   .actwrap[open] .actno{background:var(--fill);color:#fff;border-color:var(--fill)}
   .actno.done,.actwrap[open] .actno.done{background:var(--done);color:#fff;border-color:var(--done)}
+
+  .consist{display:inline-block;margin-left:14px;padding:3px 10px;border-radius:999px;
+    font:700 12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;
+    border:1px solid var(--line);background:var(--chip);color:var(--muted)}
+  .consist small{font-weight:400;opacity:.8;letter-spacing:0}
+  .consist.ok{color:var(--done);border-color:rgba(46,160,67,.5);background:rgba(46,160,67,.12)}
+  .consist.mid{color:var(--gold);border-color:rgba(232,179,57,.5);background:rgba(232,179,57,.12)}
+  .consist.bad{color:var(--red);border-color:rgba(229,83,75,.5);background:rgba(229,83,75,.14)}
+  .consist.none{font-weight:400;text-transform:none;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -284,7 +293,7 @@
 <!-- JUDGE PANEL -->
 <section class="card act" id="traces">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Three prompts</span><span class="acthint">Two to run now. One to take home.</span></summary>
+    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Make your own trace</span><span class="acthint">20 sec · in your own tool</span></summary>
     <div class="actbody">
 
   <p><b>1 · Run this now.</b> Paste it into Claude Code, Claude Desktop, Codex or ChatGPT.
@@ -366,10 +375,10 @@ one line on what came back.</code></pre>
 
 <section class="card act" id="judge">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">2</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">Two cases. Run each one twice.</span></summary>
+    <summary class="actsum"><span class="actno">2</span><span class="acttitle">Does the judge agree with itself?</span><span class="acthint">2 min · one run proves nothing</span></summary>
     <div class="actbody">
   <p>Before you grade an agent, meet the thing that usually grades it for you: another language model.
-    Pick a case, run the judge, then run it again on the <em>same</em> input and watch what happens.</p>
+    Pick a case and run the judge <b>three or four times</b> on the <em>same</em> input. Two runs is not enough to tell you anything. Watch whether the verdict holds, and watch the reasoning underneath it.</p>
 
   <div class="jcase" id="jcase" role="group" aria-label="Pick a case"></div>
   <dl class="qa" id="jqa"></dl>
@@ -381,6 +390,20 @@ one line on what came back.</code></pre>
   </div>
 
   <div id="jout"></div>
+
+  <div class="note" style="border-left-color:var(--gold);background:rgba(232,179,57,.10)">
+    <b>How is “overall” decided?</b> There is no formula. No threshold, no weights, no
+    aggregation. The judge was asked one extra question, verbatim:
+    <em>“give an overall verdict: pass if you would accept this answer, fail if you would not.”</em>
+    It answered, and gave its reasoning.
+    <br><br>
+    That is why rows can disagree with the verdict above them. In some runs here two criteria
+    pass and the overall is still fail, because the judge decided a factual error outweighs a
+    well-structured answer. Nothing in the setup told it how to make that trade.
+    <br><br>
+    <b>Worth checking on Monday:</b> is your overall verdict a rule you wrote, or a judgement the
+    model made? Most people assume the first. Most setups do the second.
+  </div>
   <p class="note" id="jmeta"></p>
 
     </div>
@@ -392,7 +415,7 @@ one line on what came back.</code></pre>
 <!-- WARM-UP -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">Thirty seconds. Learn the format.</span></summary>
+    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">30 sec · the easy one</span></summary>
     <div class="actbody">
   <p><b>The bug:</b> importing music with certain settings crashes with <code>TypeError: format() argument 2 must be str, not int</code>. It happens when a config value is a number (like <code>play_count: 0</code>) instead of text.</p>
 
@@ -439,7 +462,7 @@ one line on what came back.</code></pre>
 <!-- MAIN CASE -->
 <section class="card act">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">Read it, then make your call.</span></summary>
+    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">15 min · the real one</span></summary>
     <div class="actbody">
   <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
 
@@ -645,7 +668,18 @@ one line on what came back.</code></pre>
       ? 'overall: ' + runs.map(function (r) {
           var p = r.overall.verdict === 'pass';
           return '<i class="' + (p ? 'p' : 'f') + '">' + (p ? 'PASS' : 'FAIL') + '</i>';
-        }).join(' ')
+        }).join(' ') + (function () {
+          var seen = runs.slice(0, shown);
+          if (seen.length < 2) {
+            return '<span class="consist none">1 run. Nothing to compare yet.</span>';
+          }
+          var pass = seen.filter(function (r) { return r.overall.verdict === 'pass'; }).length;
+          var top  = Math.max(pass, seen.length - pass);
+          var pct  = Math.round(top / seen.length * 100);
+          var cls  = pct === 100 ? 'ok' : (pct >= 75 ? 'mid' : 'bad');
+          return '<span class="consist ' + cls + '">consistency ' + pct + '%'
+               + ' <small>(' + top + ' of ' + seen.length + ' agree)</small></span>';
+        })()
       : '';
 
     elRes.hidden = shown === 0;
