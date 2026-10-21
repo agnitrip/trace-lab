@@ -284,11 +284,12 @@
 <!-- JUDGE PANEL -->
 <section class="card act" id="traces">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Two prompts you can keep</span><span class="acthint">Make a trace of your own, then read it back.</span></summary>
+    <summary class="actsum"><span class="actno">1</span><span class="acttitle">Three prompts</span><span class="acthint">Two to run now. One to take home.</span></summary>
     <div class="actbody">
 
-  <p><b>1 · Make a trace.</b> Paste this into Claude Code, Claude Desktop, Codex or ChatGPT. It takes
-    about twenty seconds. Watch the middle of the screen, not the end.</p>
+  <p><b>1 · Run this now.</b> Paste it into Claude Code, Claude Desktop, Codex or ChatGPT.
+    About twenty seconds. Everyone in the room runs the same question, so we can compare what
+    comes back. Watch the middle of the screen, not the end.</p>
 
   <pre><code>What's the newest iPhone and what's the newest Samsung Galaxy phone?
 Which one came out more recently?
@@ -298,9 +299,9 @@ columns: tool name, the input you passed, succeeded or failed, and
 one line on what came back.</code></pre>
 
   <p style="margin-top:18px"><b>2 · Read it back.</b> Paste the trace from step 1 into a
-    <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its own
-    run and it still has its own reasoning in front of it, which is the circular verification we take
-    apart in the lab.</p>
+    <b>brand new chat</b> along with this. The new chat matters: ask the same agent to grade its
+    own run and it still has its own reasoning in front of it, which is the circular verification
+    we take apart in the lab.</p>
 
   <pre><code>Below is a trace from an AI agent run. Assess only what the trace
 shows. Do not assume the agent was right.
@@ -313,20 +314,31 @@ shows. Do not assume the agent was right.
 5. Is its conclusion fully supported by what came back, or did it
    fill a gap?
 
-End with two lines:
-- How much weight this result deserves, and why.
-- The single thing that would most change your assessment.
+Then rate the strength of the EVIDENCE, not the truth of the answer:
+
+  HIGH    searched, opened sources, cross-checked, and said plainly
+          what it could not confirm
+  MEDIUM  searched and the conclusion follows, but nothing was
+          independently verified
+  LOW     one pass only, or it cited sources it never opened
+
+End with the single thing that would most change your rating.
 
 [paste the trace here]</code></pre>
 
-  <div class="note" style="border-left-color:var(--accent);background:rgba(110,168,254,.08)">
-    <b>There is no score, on purpose.</b> A number would invite you to believe it. A judgement on a
-    single run is exactly the thing that moves between runs, which is what the judge panel at the top
-    of this page shows. You get a weighting and the one thing to go and check instead.
+  <div class="note" style="border-left-color:var(--fill);background:rgba(27,127,184,.10)">
+    <b>Run step 2 twice on the same trace.</b> If the two ratings disagree, that disagreement is
+    your real signal. It is the same thing the judge panel above shows, happening to your own work.
+    There is no percentage on purpose. A number would invite you to believe it.
   </div>
 
-  <p class="note" style="margin-top:14px">Both prompts work on your own agents at work, not just the
-    phone question. Step 2 is the useful one to keep.</p>
+  <p style="margin-top:20px"><b>3 · Keep this bit.</b> The second half of step 1 is not about
+    phones. Append it to <em>any</em> question, in any tool, and you get a trace back. Then step 2
+    reads it for you.</p>
+
+  <pre><code>Then print a table of every tool call you made, in order, with these
+columns: tool name, the input you passed, succeeded or failed, and
+one line on what came back.</code></pre>
 
   <details style="margin-top:16px">
     <summary>What happened when I ran step 1 three times on 19 October 2026</summary>
