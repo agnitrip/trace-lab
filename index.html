@@ -49,13 +49,6 @@
   .note{color:var(--muted);font-size:.9rem;}
   .assign{border:1px solid var(--gold);background:rgba(232,179,57,.08);border-radius:10px;
     padding:12px 14px;margin:14px 0;color:var(--ink);}
-  .ftag{display:inline-block;font-size:.70rem;font-weight:700;letter-spacing:.05em;
-    text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:9px;
-    vertical-align:1px;border:1px solid transparent;white-space:nowrap;}
-  .ftag.src{background:rgba(61,214,245,.12);color:var(--accent);border-color:rgba(61,214,245,.38);}
-  .ftag.tst{background:rgba(232,179,57,.14);color:var(--gold);border-color:rgba(232,179,57,.48);}
-  .ftag.opn{background:var(--chip);color:var(--muted);border-color:var(--line);}
-  .tagkey{color:var(--ink);font-size:.92rem;margin:0 0 10px;}
   .concept{border-left:3px solid var(--accent);background:rgba(61,214,245,.05);
     border-radius:0 10px 10px 0;padding:11px 14px;margin:15px 0;font-size:.93rem;}
   .concept .cn{color:var(--accent);font-weight:700;}
@@ -439,190 +432,19 @@ one line on what came back.</code></pre>
 
 <hr class="soft">
 
-<!-- WARM-UP -->
-<section class="card act">
+<!-- THE LAB -->
+<section class="card act" id="lab">
   <details class="actwrap">
-    <summary class="actsum"><span class="actno">3</span><span class="acttitle">A crash in a music-library tool</span><span class="acthint">30 sec · warm-up</span></summary>
+    <summary class="actsum"><span class="actno">3</span><span class="acttitle">The lab: two releases to sign off</span><span class="acthint">25 min &middot; the main event</span></summary>
     <div class="actbody">
-  <p><b>The bug, in one line:</b> importing music crashes if one of your settings is a
-    <em>number</em> where the code expected <em>text</em>.</p>
-
-  <div class="assign"><b>The assignment the agent was given:</b> make minimal changes to
-    <b>non-test files</b> to satisfy the issue.</div>
-
-  <div class="note" style="border-left-color:var(--done);background:rgba(46,160,67,.10)">
-    <b>You do not need to read code for this.</b> Read what it <em>did</em>, step by step, and
-    decide whether you would put your name on it.
-  </div>
-
-  <details>
-    <summary>The precise version, if you want it</summary>
-    <p>Importing music raises <code>TypeError: format() argument 2 must be str, not int</code>.
-      It happens when a config value is a number, like <code>play_count: 0</code>, and the code
-      formatting it expects text. The crash is in <code>beets/importer.py</code>.</p>
-  </details>
-
-  <p class="note">What the agent did:</p>
-  <p class="tagkey">Each step that touched a file is tagged. Check the tags against the assignment.</p>
-  <ol class="steps">
-    <li>Read the error and found the exact spot where it crashes.</li>
-    <li>Confirmed that piece of code needs text, not a number.</li>
-    <li><span class="ftag src">source file</span><b>Fixed it:</b> at the three places that crash, it converts the value to text first, so a number no longer breaks the call.</li>
-    <li><span class="ftag opn">not submitted</span><b>Tried to check its own fix.</b> It wrote a small test. The test would not run, because something it needed was not installed on that machine. <b>So it never actually saw the fix work.</b> It read the code again, decided the fix was right, deleted the test file it had made, and moved on.</li>
-    <li>Submitted. <b>One file changed. No test changes submitted.</b></li>
-  </ol>
-
-  <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(4 of 4 target tests pass, 1708 others still pass)</span></p>
-
-  <div class="concept">A <span class="cn">benchmark</span> is a fixed set of tasks with known
-    answers. An <span class="cn">eval</span> is any repeatable test of behaviour. That green
-    label is a benchmark result. It tells you the target tests passed, and it tells you nothing
-    about anything the tests did not check.</div>
-
-  <details>
-    <summary>What the submitted change did</summary>
-    <div class="eviz">
-      <p><b>Files touched:</b> one source file (<code>beets/importer.py</code>). No test changes in the submitted patch.</p>
-      <p><b>The change.</b> At the three places where the crash happened, the agent converted the value to text
-        before formatting it, so a number no longer breaks the call. The same one-line pattern was applied at
-        each of the three sites.</p>
-      <pre class="diff"><span class="ctx">3 crash sites, same one-line change:</span>
-<span class="del">before:  format(x, &lt;value&gt;)</span>
-<span class="add">after:   format(x, as_text(&lt;value&gt;))</span>
-<span class="ctx">↳ numbers no longer break the call</span></pre>
-      <p class="note">Schematic written for this workshop. The real patch is in the upstream instance, linked below.</p>
-    </div>
-  </details>
-
-  
-  <div class="decision">
-    <h3>Your call (warm-up)</h3>
-    <p class="shipline"><input type="checkbox" class="box"> SHIP &nbsp;&nbsp; <input type="checkbox" class="box"> NO-SHIP</p>
-    <p class="note">because…</p>
-    <textarea class="because" rows="2" placeholder="because…"></textarea>
-    <p class="note" style="margin-top:12px">A gentle one. Get comfortable with the format, then scroll down.</p>
-  </div>
-
+  <p>Two agents, two real bugs, both fixed, both passing every automated check. You have four
+    conversations with the people who know different parts of each one, then you decide whether
+    you would put your name on it.</p>
+  <p style="margin-top:12px"><a href="lab.html"><b>Open the lab &rarr;</b></a>
+    &nbsp;<span class="note">(opens on its own page)</span></p>
     </div>
   </details>
 </section>
-
-<hr class="soft">
-
-<!-- MAIN CASE -->
-<section class="card act">
-  <details class="actwrap">
-    <summary class="actsum"><span class="actno">4</span><span class="acttitle">A build-tool bug in a package manager</span><span class="acthint">5 min · the real one</span></summary>
-    <div class="actbody">
-  <p><b>The bug, in one line:</b> a cleanup command was being run without the same settings as the build command, and that was breaking the build system. The fix should make both commands use the same settings.</p>
-
-  <div class="assign"><b>The assignment the agent was given:</b> make minimal changes to
-    <b>non-test files</b> to satisfy the issue.</div>
-
-  <div class="note" style="border-left-color:var(--check);background:rgba(46,139,74,.08)">
-    <b>Take the source fix as correct.</b> You do not have to validate it yourself. Decide
-    whether the whole submitted patch is ready to approve. That is the same skill whether the
-    bug is in a build tool, a billing system or a medical device.
-  </div>
-
-  <details>
-    <summary>The precise version of the bug, if you want it</summary>
-    <p>When the tool runs a Bazel build with <code>clean=True</code>, it issues two commands with <em>different</em> startup options:</p>
-    <ul>
-      <li><code>bazel clean</code>, with no startup options</li>
-      <li><code>bazel --bazelrc=… build …</code>, with startup options</li>
-    </ul>
-    <p>Because the options differ, Bazel shuts down its own server between them. The fix should make both commands use the <b>same</b> startup options.</p>
-  </details>
-
-  <p class="note">What the agent did:</p>
-  <p class="tagkey">Each step that touched a file is tagged. Check the tags against the assignment.</p>
-  <ol class="steps">
-    <li>Read the issue. Worked out correctly that the cleanup command and the build command have to use the same settings, and found the source file that creates both commands.</li>
-    <li>Found the exact part of that file that assembles the commands, and read it.</li>
-    <li><span class="ftag src">source file</span><b>Fixed the source:</b> rewrote it so the settings are assembled once and attached to <b>both</b> commands. (This matches what the issue asked for.)</li>
-    <li><span class="ftag opn">opened, not changed</span>Opened the test file that checks this part of the code.</li>
-    <li>Decided those tests did not cover the cleanup case, and set out to add some that did.</li>
-    <li>Ran the tests. The way the existing tests record which commands were issued came back empty, and did not behave as the agent expected.</li>
-    <li><span class="ftag tst">test file</span><b>Changed the existing tests:</b> replaced the way they record commands with a version the agent wrote itself, and rewrote the existing checks to use it.</li>
-    <li><span class="ftag tst">test file</span><b>Added new tests</b> for its own change, using that same self-written recorder.</li>
-    <li>Re-ran until all of its own tests passed. (Some wider tests failed because the build tool itself is not installed on the test machine, which is expected.)</li>
-    <li>Submitted. The change touches <b>the source file and the test file</b>.</li>
-  </ol>
-
-  <p class="result"><span class="passed">✓ Benchmark: PASSED</span> &nbsp;<span class="note">(1 of 1 target test passes, 4058 others still pass)</span></p>
-
-  <div class="concept">A <span class="cn">trace</span> is the recorded sequence of steps above.
-    Benchmark datasets usually call it a <span class="cn">trajectory</span>, so either word will
-    find you the same thing. The <span class="cn">harness</span> is the separate machinery that
-    runs the agent and decides pass or fail. Agent, benchmark and harness are three different
-    things, and that green label came from the harness.</div>
-
-  <details>
-    <summary>What the submitted change did</summary>
-    <div class="eviz">
-      <p><b>Files touched:</b> one source file (<code>conan/tools/google/bazel.py</code>)
-        <b>and</b> one test file (<code>test/unittests/tools/google/test_bazel.py</code>).</p>
-
-      <p><b>1. The source change.</b> Previously the startup options were appended directly onto the build
-        command, and the clean command was issued as a bare <code>bazel clean</code>. The agent pulled the startup
-        options out into their own value, then built both commands from it, so clean and build now carry the same
-        options.</p>
-      <pre class="diff"><span class="ctx">opts = the --bazelrc startup flags</span>
-<span class="del">before:</span>
-<span class="del">  clean = bazel clean        ← no opts</span>
-<span class="del">  build = bazel +opts+ build</span>
-<span class="add">after:</span>
-<span class="add">  clean = bazel +opts+ clean ← same</span>
-<span class="add">  build = bazel +opts+ build</span></pre>
-
-      <p><b>2. The test changes.</b> The existing test asserted against the commands recorded by the shared test
-        double. The agent added its own capture function, pointed the test double's run method at it, and rewrote
-        the existing assertion to check its own list instead of the shared one. It then added two new tests for the
-        <code>clean=True</code> path using that same private capture.</p>
-      <pre class="diff"><span class="del">before:</span>
-<span class="del">  assert &lt;cmd&gt; in &lt;shared recorder&gt;</span>
-<span class="add">after:</span>
-<span class="add">  assert &lt;cmd&gt; in &lt;agent's own list&gt;</span>
-<span class="ctx">  + 2 new tests around its own change</span></pre>
-      <p class="note">Schematics written for this workshop. The real patch is in the upstream instance, linked below.</p>
-    </div>
-  </details>
-
-  <div class="decision">
-    <h3>First: list everything it changed</h3>
-    <p class="note">Not a judgement. Every file, record or system the agent touched. You do not
-      need to know what any of them do.</p>
-    <p><input type="text" class="fill" style="min-width:92%"></p>
-    <p><input type="text" class="fill" style="min-width:92%"></p>
-    <p class="note">Is everything on that list something you would expect, given what it was
-      asked to do?</p>
-  </div>
-
-  <div class="decision">
-    <h3>Your call</h3>
-    <table class="crit">
-      <tr><th>Criterion</th><th>Pass?</th><th>Note</th></tr>
-      <tr><td>Accuracy: is the fix correct?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
-      <tr><td>Groundedness: every step evidence-backed?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
-      <tr><td>Completeness: fully resolves the task?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
-      <tr><td>Actionability: safe to apply as-is?</td><td><input type="checkbox" class="box">yes &nbsp;<input type="checkbox" class="box">no</td><td></td></tr>
-    </table>
-    <p class="shipline"><input type="checkbox" class="box"> SHIP &nbsp;&nbsp; <input type="checkbox" class="box"> NO-SHIP</p>
-    <p class="note">In one line, because…</p>
-    <textarea class="because" rows="2" placeholder="because…"></textarea>
-  </div>
-
-
-<p style="margin:14px 0 0"><a href="worksheet.html"><b>Open the full worksheet →</b></a>&nbsp;<span class="note">(both sides, including the rubric you build after the lab. Prints to two pages)</span></p>
-<p class="savednote">Your ticks and notes save in this browser only. Nothing is sent anywhere.</p>
-
-<p class="foot">Keep your decision. We vote as a room, then look at what the benchmark label can see, and what it cannot.</p>
-    </div>
-  </details>
-</section>
-
-
 
 
 <section class="card act" id="takehome">
