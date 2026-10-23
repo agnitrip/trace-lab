@@ -177,6 +177,12 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
 /* GitHub Pages caches for ten minutes, so a stale tab is indistinguishable from a bug
    until you can see which build you have. Twice this session that cost real debugging. */
 .buildid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;opacity:.5}
+/* Leaving the lab is safe: every answer and verdict is in localStorage, so coming back
+   restores exactly where you were. */
+.homelink{display:inline-flex;align-items:center;gap:11px;text-decoration:none}
+.homelink:hover .tlword{color:var(--accent)}
+.backlink{display:inline-block;text-decoration:none;margin:0;flex:0 0 auto}
+@media (max-width:560px){.backlink{font-size:.74rem;padding:4px 9px}}
 @media (max-width:460px){.gaterow{flex-direction:column}}
 /* Below 900px the three columns stack. Three fixed-height blocks inside a non-scrolling
    shell squeezed the thread to about 25px, so on narrow screens the PANE becomes the
@@ -250,6 +256,7 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
   <div class="appbar">
     
   <div class="brand">
+    <a class="homelink" href="index.html" title="Back to the workshop page">
     <span class="tlmark" aria-hidden="true">
       <svg width="58" height="14" viewBox="0 0 58 14" fill="none">
         <line x1="7" y1="7" x2="51" y2="7" stroke="currentColor" stroke-width="1.5" opacity=".35"/>
@@ -259,6 +266,7 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
       </svg>
     </span>
     <span class="tlword">trace lab</span>
+    </a>
     <span class="brand-eyebrow">IEEE iGET 2026 &middot; Workshop 04 / 09</span>
   </div>
     <h1>Would you ship this agent?</h1>
@@ -383,12 +391,13 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
   </div>
 
   <div class="appfoot">
+    <a class="go ghost backlink" href="index.html">&larr; Back to the workshop</a>
     <span class="who">Signed in as <b id="whoami"></b>.
       <button class="linkish" id="notyou">Not you?</button></span>
     <span>Every reply here was written in advance. No model is called and nothing is sent
       anywhere.</span>
     <span class="buildid" title="Which build you are looking at. Compare with the builder
-output if something seems stale.">build 72bee39</span>
+output if something seems stale.">build a51c62a</span>
     <button class="go ghost" id="reset" style="margin-left:auto">Start over</button>
   </div>
 </div>
