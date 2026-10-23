@@ -74,9 +74,11 @@ code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 .playbar .go.ghost{margin:0;font-size:.76rem;padding:4px 11px}
 .quote{margin:7px 0 2px;padding:7px 12px;border-left:3px solid var(--accent);
   background:rgba(61,214,245,.07);border-radius:0 8px 8px 0;font-style:italic}
-.typing{display:flex;gap:4px;padding:4px 2px}
-.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);
-  animation:blink 1.1s infinite}
+.typing{display:flex;gap:5px;padding:5px 2px 3px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);
+  animation:blink 1.25s infinite}
+.istyping{font-style:italic;opacity:.8}
+.typing-msg .bub{min-width:112px}
 .typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
 @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
 
@@ -436,9 +438,35 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
    The escape hatch matters more than the exact number, because most of the pressure comes
    from not being in control. `skip` dumps the remainder instantly. */
 let skip=false;
-function readMs(txt){
-  const words=String(txt).replace(/<[^>]+>/g,' ').trim().split(/\s+/).length;
-  return Math.max(1400, words*180);
+
+/* Every timing lives here. Raise readPerWord to slow the room down, lower it to speed up.
+   A reader found the old pace stressful rather than quick, so the gaps are generous and
+   the escape hatch ("Show the rest") carries anyone who reads faster. */
+const PACE={typeBase:650, typePerWord:55, typeMax:2200, readMin:1700, readPerWord:200,
+            /* The opening is one person dumping context in a burst, which arrives faster in
+               real life than a considered reply to a question. At full pace it ran 57s
+               before anyone had done anything, so it runs at two thirds. */
+            burst:0.66};
+
+function wordsIn(txt){
+  return String(txt).replace(/<[^>]+>/g,' ').trim().split(/\s+/).filter(Boolean).length;
+}
+/* how long the bubble sits before the next one starts */
+function readMs(txt,k){ return Math.max(PACE.readMin, wordsIn(txt)*PACE.readPerWord)*(k||1); }
+/* how long "… is typing" runs first, scaled to what they are about to say */
+function typeMs(txt,k){
+  return Math.min(PACE.typeMax, PACE.typeBase + wordsIn(txt)*PACE.typePerWord)*(k||1);
+}
+
+/* A labelled typing bubble, so you can see who is about to speak rather than just dots. */
+function typingNode(who,role){
+  const d=document.createElement('div');
+  d.className='msg typing-msg '+kind(who);
+  d.innerHTML='<div class="avatar">'+initials(who)+'</div>'
+    +'<div class="bub"><div class="who"><b>'+who+'</b>'
+    +(role?' &middot; '+role:'')+' <span class="istyping">is typing</span></div>'
+    +'<div class="typing"><i></i><i></i><i></i></div></div>';
+  return d;
 }
 function setPlaybar(on){
   document.querySelectorAll('.playbar').forEach(b=>b.classList.toggle('hidden',!on));
@@ -457,13 +485,10 @@ async function playConversation(c,n,animate){
     const live=animate&&!skip;
     if(live){
       const f1=willFollow();
-      const t=document.createElement('div');
-      t.className='msg '+kind(b.who);
-      t.innerHTML='<div class="avatar">'+initials(b.who)+'</div>'
-        +'<div class="bub"><div class="typing"><i></i><i></i><i></i></div></div>';
-      thread.appendChild(t); if(f1) toBottom(c,false,false);
-      await sleep(Math.min(850,300+readMs(b.text)/6));
-      t.remove();
+      const tip=typingNode(b.who, b.who===conv.who?conv.role:'');
+      thread.appendChild(tip); if(f1) toBottom(c,false,false);
+      await sleep(typeMs(b.text));
+      tip.remove();
     }
     const f2=willFollow();
     const el=node(b,c,step,b.who===conv.who?conv.role:'');
@@ -483,12 +508,27 @@ async function playConversation(c,n,animate){
 async function playOpening(c,animate){
   const thread=document.getElementById('thread-'+c);
   const ob=DATA.dialogue[c].opening.bubbles;
+  skip=false;
+  /* `playing` was only set while a conversation ran, so the cast stayed clickable through
+     Priya's opening and a card click started a second playback on top of it. Two people
+     typing at once, two conversations interleaved. Guard the opening the same way. */
+  if(animate){ playing=true; setPlaybar(true); renderAll(); }
   for(let i=0;i<ob.length;i++){
-    if(animate){await sleep(Math.min(900,340+ob[i].text.length*3));}
-    /* opening spans three minutes so it reads as a real message burst, and stops
-       short of the first conversation's slot at step 3 */
+    const live=animate&&!skip;
+    if(live){
+      const tip=typingNode('Priya','Engineering Lead');
+      thread.appendChild(tip); toBottom(c,false,false);
+      await sleep(typeMs(ob[i].text,PACE.burst));
+      tip.remove();
+    }
+    /* the opening spans three minutes so it reads as a real burst of messages */
     thread.appendChild(node(ob[i],c,Math.floor(i/3),'Engineering Lead'));
+    toBottom(c,false,false);
+    if(animate&&!skip) await sleep(readMs(ob[i].text,PACE.burst));
   }
+  setPlaybar(false);
+  skip=false;
+  if(animate){ playing=false; renderAll(); }
 }
 
 /* ---- full repaint (no animation), used on load and after state change */
