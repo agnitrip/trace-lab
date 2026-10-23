@@ -31,6 +31,11 @@ body{margin:0;background:var(--bg);color:var(--ink);
 .pane{flex:1;min-height:0;display:grid;gap:12px;
   grid-template-columns:232px minmax(0,1fr) 268px;grid-template-rows:minmax(0,1fr)}
 .col{min-height:0;display:flex;flex-direction:column}
+/* The three-column grid is for the CASE panes only. The gate has one child and the debrief
+   has two, so under the grid they were placed in the 232px first column and clipped. This
+   stayed invisible because every seeded test had a name stored, so the gate never rendered. */
+#pane-gate,#pane-closing{display:flex;flex-direction:column}
+#pane-closing .dock{flex:0 0 auto}
 .col.rail{background:var(--rail);border:1px solid var(--line);border-radius:14px;
   padding:12px 11px;overflow-y:auto}
 /* min-height:0 is load-bearing. A flex item will not shrink below its content height
