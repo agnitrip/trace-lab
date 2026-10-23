@@ -708,9 +708,21 @@ document.addEventListener('click',async e=>{
   if(nav&&!nav.disabled){goPane(nav.dataset.go);return;}
   if(e.target.closest('#notyou')){ S.name=''; renderAll();
     const i=document.getElementById('namein'); if(i){i.value='';i.focus();} return;}
-  if(e.target.closest('#reset')&&confirm('Clear both cases and start again?')){
-    S=blank(S.name);           /* keep who they are, reset what they decided */
-    DATA.ready.forEach(repaint);renderAll();toBottom('A',true,false);}
+  if(e.target.closest('#reset')&&
+     confirm('Start again from the beginning? This clears both cases.')){
+    /* A full reset, name included, so the gate comes back. Keeping the name made the
+       button look broken: both cases cleared but the screen was unchanged.
+       The threads are emptied rather than repainted, because the submit handler only
+       animates Priya's opening when thread-A is empty. Repainting here would leave the
+       opening already on screen and the second run would start without it. */
+    S=blank();
+    DATA.ready.forEach(c=>{const th=document.getElementById('thread-'+c);
+      if(th) th.innerHTML='';});
+    renderAll();
+    try{localStorage.removeItem(KEY);}catch(e){}   /* after save, so the key really goes */
+    const i=document.getElementById('namein'); if(i){i.value='';i.focus();}
+    return;
+  }
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='namein'){
