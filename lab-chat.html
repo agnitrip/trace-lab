@@ -174,6 +174,9 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
 .appfoot .who b{color:var(--ink)}
 .linkish{background:none;border:none;color:var(--accent);font:inherit;font-size:.76rem;
   cursor:pointer;padding:0;text-decoration:underline}
+/* GitHub Pages caches for ten minutes, so a stale tab is indistinguishable from a bug
+   until you can see which build you have. Twice this session that cost real debugging. */
+.buildid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.68rem;opacity:.5}
 @media (max-width:460px){.gaterow{flex-direction:column}}
 /* Below 900px the three columns stack. Three fixed-height blocks inside a non-scrolling
    shell squeezed the thread to about 25px, so on narrow screens the PANE becomes the
@@ -384,6 +387,8 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
       <button class="linkish" id="notyou">Not you?</button></span>
     <span>Every reply here was written in advance. No model is called and nothing is sent
       anywhere.</span>
+    <span class="buildid" title="Which build you are looking at. Compare with the builder
+output if something seems stale.">build 400b28e</span>
     <button class="go ghost" id="reset" style="margin-left:auto">Start over</button>
   </div>
 </div>
