@@ -388,7 +388,7 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
     <span>Every reply here was written in advance. No model is called and nothing is sent
       anywhere.</span>
     <span class="buildid" title="Which build you are looking at. Compare with the builder
-output if something seems stale.">build 400b28e</span>
+output if something seems stale.">build 72bee39</span>
     <button class="go ghost" id="reset" style="margin-left:auto">Start over</button>
   </div>
 </div>
@@ -533,6 +533,17 @@ async function playOpening(c,animate){
   }
   setPlaybar(false);
   skip=false;
+  /* Priya's opening is a briefing, not a reply, and it is taller than the box. Following it
+     down leaves the reader parked at the last bubble with the greeting scrolled away, so the
+     lab looks like it begins in the middle. Go back to the top so it reads from "Morning".
+     Conversations keep following to the bottom, because there you asked the question and the
+     answer is what you are waiting for. */
+  const box=scroller(c);
+  /* 'instant', not 'smooth'. A smooth scroll back up through ten bubbles is disorienting,
+     and it also cannot be verified: smooth scrolling does not complete under headless
+     virtual time, so the test reports the old position and the fix looks broken. */
+  if(box) box.scrollTo({top:0,behavior:'instant'});
+  manual[c]=false;   /* the next conversation still follows normally */
   if(animate){ playing=false; renderAll(); }
 }
 
@@ -801,12 +812,21 @@ document.addEventListener('submit',async e=>{
   if(!S.phase||!['A','B'].includes(S.phase)) S.phase='A';
   DATA.ready.forEach(c=>{wireScroll(c); if(!(fresh&&c==='A')) repaint(c);});
   renderAll();
-  if(fresh&&S.name){ await playOpening('A',!REDUCED); }
-  renderAll();
   if(!S.name){const i=document.getElementById('namein'); if(i) i.focus();}
-  if(S.closing){const el=document.getElementById('scroll-closing');
-    if(el) el.scrollTo({top:0,behavior:'instant'});}
-  else toBottom(S.phase,true,false);
+  if(fresh&&S.name){
+    /* A fresh opening deliberately ends at the TOP, so it must not be dragged down after.
+       The forced scroll in the else branch exists to restore somebody mid-session, and it
+       was firing a few hundred milliseconds after the opening and undoing the scroll-up.
+       That is why the briefing appeared to start at "There are two sets" instead of
+       "Morning". */
+    await playOpening('A',!REDUCED);
+    renderAll();
+  }else{
+    renderAll();
+    if(S.closing){const el=document.getElementById('scroll-closing');
+      if(el) el.scrollTo({top:0,behavior:'instant'});}
+    else toBottom(S.phase,true,false);
+  }
 })();
 </script>
 </body>
