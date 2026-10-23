@@ -397,7 +397,7 @@ blockquote.verbatim p{margin:.25em 0;font-size:.94rem}
     <span>Every reply here was written in advance. No model is called and nothing is sent
       anywhere.</span>
     <span class="buildid" title="Which build you are looking at. Compare with the builder
-output if something seems stale.">build 0f358e3</span>
+output if something seems stale.">build 895177b</span>
     <button class="go ghost" id="reset" style="margin-left:auto">Start over</button>
   </div>
 </div>
@@ -697,18 +697,27 @@ const LABEL={A:['Case A','a packaging tool for desktop Linux apps'],
    both verdicts. */
 function bothLocked(){return S.A.locked && S.B.locked;}
 
-function goPane(k){
+async function goPane(k){
   if(k==='closing'){
     if(!bothLocked()) return;
-    S.closing=true;
-  }else{
-    S.closing=false; S.phase=k;
-    if(!S[k].asked.length) repaint(k);
+    S.closing=true; renderAll();
+    const el=document.getElementById('scroll-closing');
+    if(el) el.scrollTo({top:0,behavior:'instant'});
+    return;
   }
+  S.closing=false; S.phase=k;
   renderAll();
-  if(k==='closing'){const el=document.getElementById('scroll-closing');
-    if(el) el.scrollTo({top:0,behavior:'instant'});}
-  else toBottom(k,true,false);
+  const thread=document.getElementById('thread-'+k);
+  const untouched=S[k].asked.length===0 && !S[k].locked;
+  /* First time into a case, the briefing should arrive the way Case A's does. goPane used
+     to call repaint(), which renders instantly. That is right for restoring a session and
+     wrong for an opening nobody has seen, so Case B used to land fully written. */
+  if(untouched && thread && !thread.querySelector('.msg')){
+    await playOpening(k,!REDUCED);
+    renderAll();
+  }else{
+    toBottom(k,true,false);
+  }
 }
 
 function showPane(){
@@ -733,7 +742,7 @@ function showPane(){
   document.querySelectorAll('.swi button').forEach(b=>{
     const k=b.dataset.go;
     b.setAttribute('aria-current',String(k===want));
-    b.disabled = (k==='closing') && !bothLocked();
+    b.disabled = ((k==='closing') && !bothLocked()) || (playing && k!==want);
     if(k==='closing') b.title = bothLocked() ? 'Both verdicts are in'
       : 'Opens once both cases have a locked verdict';
   });
@@ -775,7 +784,7 @@ document.addEventListener('click',async e=>{
     toBottom(c,true,true);return;}
   if(e.target.closest('.skipbtn')){skip=true;return;}
   const nav=e.target.closest('[data-go]');
-  if(nav&&!nav.disabled){goPane(nav.dataset.go);return;}
+  if(nav&&!nav.disabled){await goPane(nav.dataset.go);return;}
   if(e.target.closest('#notyou')){ S.name=''; renderAll();
     const i=document.getElementById('namein'); if(i){i.value='';i.focus();} return;}
   if(e.target.closest('#reset')&&
@@ -819,7 +828,11 @@ document.addEventListener('submit',async e=>{
 (async ()=>{
   const fresh=S.A.asked.length===0&&!S.A.locked;
   if(!S.phase||!['A','B'].includes(S.phase)) S.phase='A';
-  DATA.ready.forEach(c=>{wireScroll(c); if(!(fresh&&c==='A')) repaint(c);});
+  DATA.ready.forEach(c=>{wireScroll(c);
+    /* Restore only cases that have been started. Pre-filling an untouched case is what
+       made Case B's briefing appear fully written the moment you opened it. */
+    if(S[c].asked.length>0||S[c].locked) repaint(c);
+  });
   renderAll();
   if(!S.name){const i=document.getElementById('namein'); if(i) i.focus();}
   if(fresh&&S.name){
